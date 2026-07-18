@@ -1,0 +1,25 @@
+<header class="header">
+  <div class="header__brand">
+    <i class="fa-solid fa-snowflake header__logo" aria-hidden="true"></i>
+    <span class="header__title">Glacier Notes</span>
+  </div>
+
+  <div class="header__search">
+    <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+    <input type="search" placeholder="Search notes…" disabled title="Search arrives in a later milestone" />
+  </div>
+
+  <div class="header__actions">
+    <button
+      type="button"
+      class="icon-button"
+      (click)="toggleTheme()"
+      [attr.aria-label]="isDark() ? 'Switch to light theme' : 'Switch to dark theme'"
+    >
+      <i class="fa-solid" [class.fa-sun]="isDark()" [class.fa-moon]="!isDark()" aria-hidden="true"></i>
+    </button>
+    <button type="button" class="icon-button" disabled aria-label="Settings">
+      <i class="fa-solid fa-gear" aria-hidden="true"></i>
+    </button>
+  </div>
+</header>

@@ -1,0 +1,23 @@
+<div class="shell">
+  <app-header />
+  <div class="shell__body">
+    <app-sidebar />
+    <main class="shell__main">
+      <div class="shell__toolbar">
+        <button type="button" class="new-note-button" disabled>
+          <i class="fa-solid fa-file-lines" aria-hidden="true"></i>
+          Text note
+        </button>
+        <button type="button" class="new-note-button" disabled>
+          <i class="fa-solid fa-list-check" aria-hidden="true"></i>
+          Checklist
+        </button>
+      </div>
+      <div class="empty-state">
+        <i class="fa-regular fa-note-sticky" aria-hidden="true"></i>
+        <p class="empty-state__title">No notes yet</p>
+        <p class="empty-state__hint">Creating notes arrives in the next milestones.</p>
+      </div>
+    </main>
+  </div>
+</div>

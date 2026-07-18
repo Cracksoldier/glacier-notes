@@ -1,0 +1,26 @@
+// Glacier Notes theme tokens (SPECIFICATION.md §5.9)
+// Dark ("cold dark blue") is the default; light theme is applied via .theme-light.
+
+.theme-dark {
+  --color-bg: #0d1b2a;
+  --color-surface: #1b263b;
+  --color-surface-elevated: #243447;
+  --color-accent: #4cc9f0;
+  --color-accent-muted: #63b3ed;
+  --color-text: #e0e6ed;
+  --color-text-muted: #8899aa;
+  --color-border: #2c3e54;
+  --color-shadow: rgba(0, 0, 0, 0.4);
+}
+
+.theme-light {
+  --color-bg: #f4f7fa;
+  --color-surface: #ffffff;
+  --color-surface-elevated: #ffffff;
+  --color-accent: #0d8ecf;
+  --color-accent-muted: #3aa8dd;
+  --color-text: #1b263b;
+  --color-text-muted: #5a6b7d;
+  --color-border: #d5dee8;
+  --color-shadow: rgba(13, 27, 42, 0.12);
+}
