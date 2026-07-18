@@ -53,11 +53,11 @@ Implementation plan derived from [SPECIFICATION.md](SPECIFICATION.md). Each mile
 
 **Goal:** Second note type, feature-complete.
 
-- [ ] Checklist editor: add/edit/delete/reorder items, toggle checked; strike-through styling (§5.4)
-- [ ] Toggle items directly on the note card (§5.4)
-- [ ] "Move checked to bottom" setting (§5.4, §7)
-- [ ] Inline markdown in item text (§5.3)
-- [ ] Convert text ⇄ checklist (lines ⇄ items, best effort) (§5.4)
+- [x] Checklist editor: add/edit/delete/reorder items, toggle checked; strike-through styling (§5.4)
+- [x] Toggle items directly on the note card (§5.4)
+- [x] "Move checked to bottom" setting (§5.4, §7)
+- [x] Inline markdown in item text (§5.3)
+- [x] Convert text ⇄ checklist (lines ⇄ items, best effort) (§5.4)
 
 **Done when:** acceptance criterion 4 passes fully.
 

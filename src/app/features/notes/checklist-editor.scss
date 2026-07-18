@@ -1,0 +1,97 @@
+.checklist {
+  display: flex;
+  flex-direction: column;
+
+  &__row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 1px 0;
+    border-top: 2px solid transparent;
+    border-bottom: 2px solid transparent;
+
+    &--dragging {
+      opacity: 0.45;
+    }
+
+    &--drop-before {
+      border-top-color: var(--color-accent);
+    }
+
+    &--drop-after {
+      border-bottom-color: var(--color-accent);
+    }
+
+    &:hover .checklist__delete,
+    &:focus-within .checklist__delete {
+      opacity: 1;
+    }
+  }
+
+  &__handle {
+    padding: 2px;
+    color: var(--color-text-muted);
+    opacity: 0.4;
+    cursor: grab;
+
+    .checklist__row:hover & {
+      opacity: 1;
+    }
+  }
+
+  &__checkbox {
+    flex-shrink: 0;
+    width: 15px;
+    height: 15px;
+    accent-color: var(--color-accent);
+    cursor: pointer;
+  }
+
+  &__text {
+    flex: 1;
+    padding: 5px 0;
+    border: none;
+    border-bottom: 1px solid transparent;
+    background: none;
+    color: inherit;
+    outline: none;
+
+    &:focus {
+      border-bottom-color: var(--color-border);
+    }
+  }
+
+  &__row--checked &__text {
+    color: var(--color-text-muted);
+    text-decoration: line-through;
+  }
+
+  &__delete {
+    padding: 2px 6px;
+    border: none;
+    background: none;
+    color: var(--color-text-muted);
+    cursor: pointer;
+    opacity: 0;
+
+    &:hover {
+      color: var(--color-text);
+    }
+  }
+
+  &__add {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 4px;
+    padding: 6px 0;
+    border: none;
+    background: none;
+    color: var(--color-text-muted);
+    cursor: pointer;
+
+    &:hover {
+      color: var(--color-text);
+    }
+  }
+}

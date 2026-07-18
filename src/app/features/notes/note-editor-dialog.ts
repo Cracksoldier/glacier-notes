@@ -11,11 +11,14 @@ import {
   viewChild,
 } from '@angular/core';
 import { DatePipe } from '@angular/common';
-import type { Note } from '../../../../electron/api';
+import type { ChecklistItem, Note, NoteUpdatePatch } from '../../../../electron/api';
 import { MarkdownService } from '../../core/markdown/markdown.service';
 import { NoteStore } from '../../core/store/note-store';
+import { SettingsStore } from '../../core/store/settings-store';
 import { UiStore } from '../../core/store/ui-store';
 import { Autofocus } from '../../shared/autofocus';
+import { ChecklistEditor } from './checklist-editor';
+import { checklistToText, textToChecklist } from './checklist-model';
 import { insertLink, orderedList, prefixLines, toggleCode, wrapSelection } from './markdown-edit';
 import { MarkdownToolbar, ToolbarAction } from './markdown-toolbar';
 
@@ -23,7 +26,7 @@ const SAVE_DEBOUNCE_MS = 500;
 
 @Component({
   selector: 'app-note-editor-dialog',
-  imports: [Autofocus, DatePipe, MarkdownToolbar],
+  imports: [Autofocus, ChecklistEditor, DatePipe, MarkdownToolbar],
   templateUrl: './note-editor-dialog.html',
   styleUrl: './note-editor-dialog.scss',
 })
@@ -33,11 +36,14 @@ export class NoteEditorDialog implements OnInit, AfterViewInit, OnDestroy {
   private readonly markdown = inject(MarkdownService);
   private readonly noteStore = inject(NoteStore);
   private readonly ui = inject(UiStore);
+  protected readonly settings = inject(SettingsStore);
 
   protected readonly title = signal('');
   protected readonly content = signal('');
+  protected readonly items = signal<ChecklistItem[]>([]);
   protected readonly previewMode = signal(false);
   protected readonly previewHtml = computed(() => this.markdown.render(this.content()));
+  protected readonly isChecklist = computed(() => this.note().type === 'checklist');
 
   private readonly dialogRef = viewChild.required<ElementRef<HTMLDialogElement>>('dialog');
   private readonly textareaRef = viewChild<ElementRef<HTMLTextAreaElement>>('textarea');
@@ -45,11 +51,13 @@ export class NoteEditorDialog implements OnInit, AfterViewInit, OnDestroy {
   private saveTimer: ReturnType<typeof setTimeout> | null = null;
   private dirty = false;
   private closing = false;
+  private converting = false;
   private readonly flushOnUnload = () => void this.flush();
 
   ngOnInit(): void {
     this.title.set(this.note().title);
     this.content.set(this.note().content);
+    this.items.set(this.note().checklist ?? []);
     window.addEventListener('beforeunload', this.flushOnUnload);
   }
 
@@ -70,6 +78,33 @@ export class NoteEditorDialog implements OnInit, AfterViewInit, OnDestroy {
   protected onContentInput(value: string): void {
     this.content.set(value);
     this.scheduleSave();
+  }
+
+  protected onItemsChange(items: ChecklistItem[]): void {
+    this.items.set(items);
+    this.scheduleSave();
+  }
+
+  protected async convert(): Promise<void> {
+    if (this.converting) return;
+    this.converting = true;
+    try {
+      await this.flush();
+      if (this.isChecklist()) {
+        const content = checklistToText(this.items());
+        await this.noteStore.updateInPlace(this.note().id, { type: 'text', content, checklist: [] });
+        this.content.set(content);
+        this.items.set([]);
+      } else {
+        const items = textToChecklist(this.content());
+        await this.noteStore.updateInPlace(this.note().id, { type: 'checklist', content: '', checklist: items });
+        this.items.set(items);
+        this.content.set('');
+        this.previewMode.set(false);
+      }
+    } finally {
+      this.converting = false;
+    }
   }
 
   protected onToolbar(action: ToolbarAction): void {
@@ -145,9 +180,9 @@ export class NoteEditorDialog implements OnInit, AfterViewInit, OnDestroy {
     }
     if (!this.dirty) return;
     this.dirty = false;
-    await this.noteStore.updateInPlace(this.note().id, {
-      title: this.title(),
-      content: this.content(),
-    });
+    const patch: NoteUpdatePatch = this.isChecklist()
+      ? { title: this.title(), checklist: this.items() }
+      : { title: this.title(), content: this.content() };
+    await this.noteStore.updateInPlace(this.note().id, patch);
   }
 }

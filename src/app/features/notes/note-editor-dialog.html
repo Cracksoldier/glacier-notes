@@ -13,33 +13,64 @@
       </button>
     </div>
 
-    <div class="editor__toolbar">
-      <app-markdown-toolbar [disabled]="previewMode()" (action)="onToolbar($event)" />
-      <button
-        type="button"
-        class="editor__preview-toggle"
-        [class.editor__preview-toggle--active]="previewMode()"
-        [title]="previewMode() ? 'Edit' : 'Preview'"
-        (click)="previewMode.set(!previewMode())"
-      >
-        <i class="fa-solid" [class.fa-eye]="!previewMode()" [class.fa-pen]="previewMode()" aria-hidden="true"></i>
-        {{ previewMode() ? 'Edit' : 'Preview' }}
-      </button>
-    </div>
-
-    @if (previewMode()) {
-      <div class="editor__preview markdown-body" [innerHTML]="previewHtml()" (click)="onPreviewClick($event)"></div>
+    @if (isChecklist()) {
+      <div class="editor__checklist">
+        <app-checklist-editor
+          [items]="items()"
+          [moveCheckedToBottom]="settings.moveCheckedToBottom()"
+          (itemsChange)="onItemsChange($event)"
+        />
+      </div>
     } @else {
-      <textarea
-        class="editor__content"
-        #textarea
-        placeholder="Take a note…"
-        [value]="content()"
-        (input)="onContentInput($any($event.target).value)"
-      ></textarea>
+      <div class="editor__toolbar">
+        <app-markdown-toolbar [disabled]="previewMode()" (action)="onToolbar($event)" />
+        <button
+          type="button"
+          class="editor__preview-toggle"
+          [class.editor__preview-toggle--active]="previewMode()"
+          [title]="previewMode() ? 'Edit' : 'Preview'"
+          (click)="previewMode.set(!previewMode())"
+        >
+          <i class="fa-solid" [class.fa-eye]="!previewMode()" [class.fa-pen]="previewMode()" aria-hidden="true"></i>
+          {{ previewMode() ? 'Edit' : 'Preview' }}
+        </button>
+      </div>
+
+      @if (previewMode()) {
+        <div class="editor__preview markdown-body" [innerHTML]="previewHtml()" (click)="onPreviewClick($event)"></div>
+      } @else {
+        <textarea
+          class="editor__content"
+          #textarea
+          placeholder="Take a note…"
+          [value]="content()"
+          (input)="onContentInput($any($event.target).value)"
+        ></textarea>
+      }
     }
 
     <div class="editor__footer">
+      <div class="editor__footer-actions">
+        <button type="button" class="editor__convert" (click)="convert()">
+          <i
+            class="fa-solid"
+            [class.fa-list-check]="!isChecklist()"
+            [class.fa-file-lines]="isChecklist()"
+            aria-hidden="true"
+          ></i>
+          {{ isChecklist() ? 'Convert to text note' : 'Convert to checklist' }}
+        </button>
+        @if (isChecklist()) {
+          <label class="editor__setting">
+            <input
+              type="checkbox"
+              [checked]="settings.moveCheckedToBottom()"
+              (change)="settings.setMoveCheckedToBottom($any($event.target).checked)"
+            />
+            Move checked to bottom
+          </label>
+        }
+      </div>
       <span class="editor__meta">Edited {{ note().updatedAt | date: 'medium' }}</span>
     </div>
   </div>

@@ -44,4 +44,25 @@ describe('MarkdownService', () => {
     const html = renderToString('[docs](https://example.com)');
     expect(html).toContain('rel="noopener"');
   });
+
+  describe('renderInline', () => {
+    const renderInlineToString = (md: string): string =>
+      sanitizer.sanitize(1 /* SecurityContext.HTML */, service.renderInline(md)) ?? '';
+
+    it('renders inline markdown without block wrappers', () => {
+      const html = renderInlineToString('**bold** and `code`');
+      expect(html).toContain('<strong>bold</strong>');
+      expect(html).toContain('<code>code</code>');
+      expect(html).not.toContain('<p>');
+    });
+
+    it('strips script tags', () => {
+      const html = renderInlineToString('x <script>alert(1)</script>');
+      expect(html).not.toContain('<script');
+    });
+
+    it('adds rel=noopener to inline links', () => {
+      expect(renderInlineToString('[a](https://example.com)')).toContain('rel="noopener"');
+    });
+  });
 });

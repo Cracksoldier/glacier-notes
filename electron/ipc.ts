@@ -60,9 +60,13 @@ export function registerIpc(repos: Repos): void {
     }
     return repos.notes.create(noteInput);
   });
-  ipcMain.handle('notes:update', (_e, id: unknown, patch: unknown) =>
-    repos.notes.update(requireString(id, 'note id'), requireObject<NoteUpdatePatch>(patch, 'patch')),
-  );
+  ipcMain.handle('notes:update', (_e, id: unknown, patch: unknown) => {
+    const notePatch = requireObject<NoteUpdatePatch>(patch, 'patch');
+    if (notePatch.type !== undefined && notePatch.type !== 'text' && notePatch.type !== 'checklist') {
+      throw new Error('Invalid note type');
+    }
+    return repos.notes.update(requireString(id, 'note id'), notePatch);
+  });
   ipcMain.handle('notes:trash', (_e, id: unknown) => repos.notes.trash(requireString(id, 'note id')));
   ipcMain.handle('notes:restore', (_e, id: unknown) => repos.notes.restore(requireString(id, 'note id')));
   ipcMain.handle('notes:purge', (_e, id: unknown) => repos.notes.purge(requireString(id, 'note id')));

@@ -148,6 +148,21 @@ dialog {
   }
 }
 
+// Inline-only markdown (checklist item text), also injected via [innerHTML].
+.markdown-inline {
+  a {
+    color: var(--color-accent);
+  }
+
+  code {
+    padding: 1px 5px;
+    border-radius: 4px;
+    background-color: var(--color-surface-elevated);
+    font-family: ui-monospace, 'Cascadia Code', Consolas, monospace;
+    font-size: 0.9em;
+  }
+}
+
 ::-webkit-scrollbar {
   width: 10px;
   height: 10px;

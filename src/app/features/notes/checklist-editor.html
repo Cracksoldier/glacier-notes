@@ -1,0 +1,39 @@
+<div class="checklist">
+  @for (item of displayed(); track item.id; let i = $index; let last = $last) {
+    <div
+      class="checklist__row"
+      [class.checklist__row--checked]="item.checked"
+      [class.checklist__row--dragging]="dragIndex() === i"
+      [class.checklist__row--drop-before]="dropIndex() === i"
+      [class.checklist__row--drop-after]="last && dropIndex() === displayed().length"
+      (dragover)="onDragOver($event, i)"
+      (drop)="onDrop($event)"
+    >
+      <span
+        class="checklist__handle"
+        title="Drag to reorder"
+        draggable="true"
+        (dragstart)="onDragStart($event, i)"
+        (dragend)="onDragEnd()"
+      >
+        <i class="fa-solid fa-grip-vertical" aria-hidden="true"></i>
+      </span>
+      <input type="checkbox" class="checklist__checkbox" [checked]="item.checked" (change)="toggle(item)" />
+      <input
+        #itemInput
+        class="checklist__text"
+        placeholder="List item"
+        [value]="item.text"
+        (input)="onTextInput(item, $any($event.target).value)"
+        (keydown)="onKeydown($event, i)"
+      />
+      <button type="button" class="checklist__delete" title="Remove item" (click)="removeAt(i)">
+        <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+      </button>
+    </div>
+  }
+  <button type="button" class="checklist__add" (click)="addItem()">
+    <i class="fa-solid fa-plus" aria-hidden="true"></i>
+    Add item
+  </button>
+</div>

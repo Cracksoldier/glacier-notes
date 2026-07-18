@@ -5,7 +5,33 @@
   @if (note().title) {
     <h3 class="note-card__title">{{ note().title }}</h3>
   }
-  @if (note().content) {
+  @if (note().type === 'checklist') {
+    @if (checklistEntries().length) {
+      <div class="note-card__checklist">
+        @for (entry of checklistEntries(); track entry.item.id) {
+          <div class="note-card__check" [class.note-card__check--done]="entry.item.checked">
+            <input
+              type="checkbox"
+              [checked]="entry.item.checked"
+              [disabled]="trashed()"
+              (click)="$event.stopPropagation()"
+              (change)="toggleItem(entry.item)"
+            />
+            <span
+              class="note-card__check-text markdown-inline"
+              [innerHTML]="entry.html"
+              (click)="onPreviewClick($event)"
+            ></span>
+          </div>
+        }
+        @if (checklistMore() > 0) {
+          <p class="note-card__more">+{{ checklistMore() }} more</p>
+        }
+      </div>
+    } @else if (!note().title) {
+      <p class="note-card__blank">Empty note</p>
+    }
+  } @else if (note().content) {
     <div class="note-card__preview markdown-body" [innerHTML]="previewHtml()" (click)="onPreviewClick($event)"></div>
   } @else if (!note().title) {
     <p class="note-card__blank">Empty note</p>

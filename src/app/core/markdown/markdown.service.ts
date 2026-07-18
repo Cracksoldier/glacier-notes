@@ -30,4 +30,13 @@ export class MarkdownService {
   renderPreview(markdown: string): SafeHtml {
     return this.render(markdown.length > PREVIEW_SOURCE_LIMIT ? `${markdown.slice(0, PREVIEW_SOURCE_LIMIT)}…` : markdown);
   }
+
+  // Inline-only markdown (bold/italic/code/links) for checklist item text — no block elements.
+  renderInline(markdown: string): SafeHtml {
+    const html = marked.parseInline(markdown, { gfm: true, breaks: true, async: false });
+    const clean = DOMPurify.sanitize(html, {
+      FORBID_TAGS: ['img', 'style', 'form', 'input', 'button'],
+    });
+    return this.sanitizer.bypassSecurityTrustHtml(clean);
+  }
 }

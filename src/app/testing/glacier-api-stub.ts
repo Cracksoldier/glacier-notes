@@ -76,6 +76,7 @@ export function installGlacierApiStub(): { notes: Note[]; notebooks: Notebook[];
           type: input.type,
           title: input.title ?? '',
           content: input.content ?? '',
+          ...(input.type === 'checklist' ? { checklist: input.checklist ?? [] } : {}),
           imageIds: [],
           pinned: false,
           archived: false,

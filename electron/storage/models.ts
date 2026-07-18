@@ -57,7 +57,7 @@ export interface NoteCreateInput {
 }
 
 export type NoteUpdatePatch = Partial<
-  Pick<Note, 'title' | 'content' | 'checklist' | 'pinned' | 'archived' | 'color' | 'labels' | 'imageIds'>
+  Pick<Note, 'type' | 'title' | 'content' | 'checklist' | 'pinned' | 'archived' | 'color' | 'labels' | 'imageIds'>
 >;
 
 export interface ImageAsset {

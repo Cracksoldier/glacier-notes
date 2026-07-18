@@ -48,6 +48,41 @@
   font-size: 13px;
 }
 
+.note-card__checklist {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 13px;
+}
+
+.note-card__check {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+
+  input {
+    flex-shrink: 0;
+    margin-top: 2px;
+    accent-color: var(--color-accent);
+    cursor: pointer;
+  }
+}
+
+.note-card__check-text {
+  overflow-wrap: anywhere;
+}
+
+.note-card__check--done .note-card__check-text {
+  color: var(--color-text-muted);
+  text-decoration: line-through;
+}
+
+.note-card__more {
+  margin: 2px 0 0;
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
+
 .note-card__blank {
   margin: 0;
   color: var(--color-text-muted);
