@@ -1,7 +1,7 @@
-import { app, BrowserWindow, session } from 'electron';
+import { app, BrowserWindow, protocol, session } from 'electron';
 import * as fs from 'fs';
 import * as path from 'path';
-import { registerIpc } from './ipc';
+import { gcImages, registerIpc } from './ipc';
 import { ImageStore } from './storage/image-store';
 import { DebouncedWriter } from './storage/json-store';
 import { LabelRepo } from './storage/label-repo';
@@ -13,13 +13,31 @@ import { createWindowState } from './window-state';
 const isDev = process.env['GLACIER_DEV'] === '1';
 const DEV_URL = 'http://localhost:4200';
 
+const IMAGE_ID_PATTERN = /^[0-9a-f-]{36}$/;
+
+protocol.registerSchemesAsPrivileged([{ scheme: 'glacier-img', privileges: { secure: true, stream: true } }]);
+
+function registerImageProtocol(images: ImageStore): void {
+  protocol.handle('glacier-img', async (request) => {
+    // Strip the scheme manually — custom-scheme parsing via new URL() is
+    // inconsistent, and the id must be validated to prevent path traversal.
+    const id = request.url.replace(/^glacier-img:\/\//, '').replace(/\/$/, '');
+    if (!IMAGE_ID_PATTERN.test(id) || !images.has(id)) {
+      return new Response('Not found', { status: 404 });
+    }
+    const { path: filePath, mimeType } = images.getFileInfo(id);
+    const data = await fs.promises.readFile(filePath);
+    return new Response(data, { headers: { 'Content-Type': mimeType } });
+  });
+}
+
 function installCsp(): void {
   const csp = isDev
     ? [
         `default-src 'self' ${DEV_URL}`,
         `script-src 'self' ${DEV_URL}`,
         `style-src 'self' 'unsafe-inline' ${DEV_URL}`,
-        `img-src 'self' data: blob: ${DEV_URL}`,
+        `img-src 'self' data: blob: glacier-img: ${DEV_URL}`,
         `font-src 'self' ${DEV_URL}`,
         `connect-src 'self' ${DEV_URL} ws://localhost:4200`,
       ].join('; ')
@@ -27,7 +45,7 @@ function installCsp(): void {
         `default-src 'self'`,
         `script-src 'self'`,
         `style-src 'self' 'unsafe-inline'`,
-        `img-src 'self' data: blob:`,
+        `img-src 'self' data: blob: glacier-img:`,
         `font-src 'self'`,
         `connect-src 'self'`,
       ].join('; ');
@@ -138,7 +156,8 @@ app.whenReady().then(() => {
   labels.init();
   images.init();
   settings.init();
-  notes.purgeExpired(settings.get().trashAutoPurgeDays);
+  gcImages({ notes, images }, notes.purgeExpired(settings.get().trashAutoPurgeDays));
+  registerImageProtocol(images);
   registerIpc({ notebooks, notes, labels, images, settings });
   app.on('before-quit', () => writer.flush());
 

@@ -23,3 +23,7 @@
 @if (editorNote(); as note) {
   <app-note-editor-dialog [note]="note" />
 }
+
+@if (ui.lightboxImageId(); as imageId) {
+  <app-image-lightbox [imageId]="imageId" (closed)="ui.closeLightbox()" />
+}

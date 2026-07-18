@@ -1,0 +1,3 @@
+<dialog #dialog class="lightbox" (cancel)="onCancel($event)" (click)="closed.emit()">
+  <img class="lightbox__image" [src]="imageId() | glacierImg" alt="" />
+</dialog>

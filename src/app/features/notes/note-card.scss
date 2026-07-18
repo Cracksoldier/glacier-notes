@@ -26,6 +26,34 @@
   opacity: 0.8;
 }
 
+.note-card__image-wrap {
+  position: relative;
+  /* Bleed to the card edges, Keep-style. */
+  margin: -14px -14px 10px;
+}
+
+.note-card__image {
+  display: block;
+  width: 100%;
+  max-height: 180px;
+  object-fit: cover;
+  border-radius: 9px 9px 0 0;
+  cursor: zoom-in;
+}
+
+.note-card__image-badge {
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  padding: 2px 7px;
+  border-radius: 10px;
+  background: rgb(0 0 0 / 65%);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+  pointer-events: none;
+}
+
 .note-card__pin-badge {
   position: absolute;
   top: 10px;

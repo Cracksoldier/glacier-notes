@@ -35,8 +35,24 @@ describe('MarkdownService', () => {
     expect(html).not.toContain('onclick');
   });
 
-  it('forbids img tags for now', () => {
+  it('removes img tags with external src', () => {
     const html = renderToString('![alt](https://example.com/x.png)');
+    expect(html).not.toContain('<img');
+  });
+
+  it('removes img tags with data: src', () => {
+    const html = renderToString('<img src="data:image/png;base64,AAAA">');
+    expect(html).not.toContain('<img');
+  });
+
+  it('keeps img tags with a glacier-img src', () => {
+    const id = '01234567-89ab-cdef-0123-456789abcdef';
+    const html = renderToString(`![alt](glacier-img://${id})`);
+    expect(html).toContain(`src="glacier-img://${id}"`);
+  });
+
+  it('removes img tags with a malformed glacier-img src', () => {
+    const html = renderToString('![alt](glacier-img://../../etc/passwd)');
     expect(html).not.toContain('<img');
   });
 
@@ -63,6 +79,11 @@ describe('MarkdownService', () => {
 
     it('adds rel=noopener to inline links', () => {
       expect(renderInlineToString('[a](https://example.com)')).toContain('rel="noopener"');
+    });
+
+    it('still forbids img tags inline', () => {
+      const id = '01234567-89ab-cdef-0123-456789abcdef';
+      expect(renderInlineToString(`![alt](glacier-img://${id})`)).not.toContain('<img');
     });
   });
 });

@@ -5,6 +5,7 @@ import { NoteStore } from '../../core/store/note-store';
 import { SettingsStore } from '../../core/store/settings-store';
 import { UiStore } from '../../core/store/ui-store';
 import { ConfirmDialog } from '../../shared/confirm-dialog/confirm-dialog';
+import { GlacierImgPipe } from '../../shared/glacier-img.pipe';
 import { displayOrder } from './checklist-model';
 import { MoveNoteMenu } from './move-note-menu';
 
@@ -12,7 +13,7 @@ const CARD_ITEM_LIMIT = 8;
 
 @Component({
   selector: 'app-note-card',
-  imports: [ConfirmDialog, MoveNoteMenu],
+  imports: [ConfirmDialog, GlacierImgPipe, MoveNoteMenu],
   templateUrl: './note-card.html',
   styleUrl: './note-card.scss',
 })
@@ -43,6 +44,11 @@ export class NoteCard {
     if (!this.trashed()) {
       this.ui.openEditor(this.note().id);
     }
+  }
+
+  protected openLightbox(event: Event, imageId: string): void {
+    event.stopPropagation();
+    this.ui.openLightbox(imageId);
   }
 
   protected onPreviewClick(event: MouseEvent): void {

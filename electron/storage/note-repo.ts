@@ -88,12 +88,14 @@ export class NoteRepo {
     return note;
   }
 
-  purge(id: string): void {
-    this.get(id);
+  /** Removes the note permanently and returns its image ids for garbage collection. */
+  purge(id: string): string[] {
+    const imageIds = this.get(id).imageIds;
     this.notes.delete(id);
     const file = this.noteFile(id);
     this.writer.cancel(file);
     fs.rmSync(file, { force: true });
+    return imageIds;
   }
 
   move(id: string, notebookId: string): Note {
@@ -104,25 +106,35 @@ export class NoteRepo {
     return note;
   }
 
-  purgeByNotebook(notebookId: string): void {
+  purgeByNotebook(notebookId: string): string[] {
+    const imageIds: string[] = [];
     for (const note of this.notes.values()) {
       if (note.notebookId === notebookId) {
-        this.purge(note.id);
+        imageIds.push(...this.purge(note.id));
       }
     }
+    return imageIds;
   }
 
-  purgeExpired(days: number): number {
-    if (days <= 0) return 0;
+  purgeExpired(days: number): string[] {
+    if (days <= 0) return [];
     const cutoff = Date.now() - days * 24 * 60 * 60 * 1000;
-    let purged = 0;
+    const imageIds: string[] = [];
     for (const note of this.notes.values()) {
       if (note.deletedAt && Date.parse(note.deletedAt) < cutoff) {
-        this.purge(note.id);
-        purged++;
+        imageIds.push(...this.purge(note.id));
       }
     }
-    return purged;
+    return imageIds;
+  }
+
+  isImageReferenced(imageId: string): boolean {
+    for (const note of this.notes.values()) {
+      if (note.imageIds.includes(imageId) || note.content.includes(imageId)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   stripLabel(labelId: string): void {

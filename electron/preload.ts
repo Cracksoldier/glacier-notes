@@ -31,6 +31,7 @@ const api: GlacierApi = {
       ipcRenderer.invoke('images:add', data, mimeType, fileName),
     getDataUrl: (id: string) => ipcRenderer.invoke('images:getDataUrl', id),
     delete: (id: string) => ipcRenderer.invoke('images:delete', id),
+    deleteIfUnreferenced: (id: string) => ipcRenderer.invoke('images:deleteIfUnreferenced', id),
   },
   settings: {
     get: () => ipcRenderer.invoke('settings:get'),

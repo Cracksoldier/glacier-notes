@@ -67,11 +67,11 @@ Implementation plan derived from [SPECIFICATION.md](SPECIFICATION.md). Each mile
 
 **Goal:** Image support end-to-end.
 
-- [ ] Insert via file picker, drag & drop, clipboard paste; PNG/JPEG/WebP/GIF (§5.5)
-- [ ] Binary storage in `images/`, referenced by ID; `glacier-img://` resolution in rendered markdown; image strip in editor; toolbar insert button (§3, §5.5)
-- [ ] Card thumbnails; click for full-size view (§5.5)
-- [ ] Auto-downscale/re-encode images > 10 MB on insert (§5.5)
-- [ ] Garbage-collect unreferenced image files on removal (§5.5)
+- [x] Insert via file picker, drag & drop, clipboard paste; PNG/JPEG/WebP/GIF (§5.5)
+- [x] Binary storage in `images/`, referenced by ID; `glacier-img://` resolution in rendered markdown; image strip in editor; toolbar insert button (§3, §5.5)
+- [x] Card thumbnails; click for full-size view (§5.5)
+- [x] Auto-downscale/re-encode images > 10 MB on insert (§5.5)
+- [x] Garbage-collect unreferenced image files on removal (§5.5)
 
 **Done when:** acceptance criterion 5 passes.
 

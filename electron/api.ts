@@ -45,6 +45,7 @@ export interface GlacierApi {
     add(data: Uint8Array, mimeType: string, fileName?: string): Promise<ImageAsset>;
     getDataUrl(id: string): Promise<string>;
     delete(id: string): Promise<void>;
+    deleteIfUnreferenced(id: string): Promise<boolean>;
   };
   settings: {
     get(): Promise<Settings>;

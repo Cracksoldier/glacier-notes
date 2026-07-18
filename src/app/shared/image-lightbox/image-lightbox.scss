@@ -1,0 +1,21 @@
+.lightbox {
+  padding: 0;
+  border: none;
+  background: transparent;
+  max-width: 90vw;
+  max-height: 90vh;
+  overflow: visible;
+
+  &::backdrop {
+    background: rgb(0 0 0 / 70%);
+  }
+
+  &__image {
+    display: block;
+    max-width: 90vw;
+    max-height: 90vh;
+    object-fit: contain;
+    border-radius: 8px;
+    cursor: zoom-out;
+  }
+}

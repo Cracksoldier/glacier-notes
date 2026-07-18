@@ -58,6 +58,11 @@ dialog {
   line-height: 1.5;
   word-wrap: break-word;
 
+  img {
+    max-width: 100%;
+    border-radius: 6px;
+  }
+
   > *:first-child {
     margin-top: 0;
   }

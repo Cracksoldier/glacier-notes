@@ -10,6 +10,7 @@ export class UiStore {
 
   readonly view = signal<View | null>(null);
   readonly editorNoteId = signal<string | null>(null);
+  readonly lightboxImageId = signal<string | null>(null);
 
   async init(): Promise<void> {
     const settings = await this.api.settings.get();
@@ -38,5 +39,13 @@ export class UiStore {
 
   closeEditor(): void {
     this.editorNoteId.set(null);
+  }
+
+  openLightbox(imageId: string): void {
+    this.lightboxImageId.set(imageId);
+  }
+
+  closeLightbox(): void {
+    this.lightboxImageId.set(null);
   }
 }

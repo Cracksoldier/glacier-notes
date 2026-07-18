@@ -1,5 +1,13 @@
 <dialog #dialog class="editor" (cancel)="onCancel($event)" (click)="onBackdropClick($event)">
-  <div class="editor__body">
+  <div class="editor__body" (dragover)="onDragOver($event)" (drop)="onDrop($event)" (paste)="onPaste($event)">
+    <input
+      #fileInput
+      type="file"
+      multiple
+      accept="image/png,image/jpeg,image/webp,image/gif"
+      hidden
+      (change)="onFilesPicked($any($event.target))"
+    />
     <div class="editor__header">
       <input
         class="editor__title"
@@ -12,6 +20,26 @@
         <i class="fa-solid fa-xmark" aria-hidden="true"></i>
       </button>
     </div>
+
+    @if (note().imageIds.length > 0) {
+      <div class="editor__images">
+        @for (id of note().imageIds; track id) {
+          <div class="editor__image-wrap">
+            <img
+              class="editor__image"
+              [src]="id | glacierImg"
+              alt=""
+              tabindex="0"
+              (click)="ui.openLightbox(id)"
+              (keydown.enter)="ui.openLightbox(id)"
+            />
+            <button type="button" class="editor__image-remove" title="Remove image" (click)="removeImage(id)">
+              <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+            </button>
+          </div>
+        }
+      </div>
+    }
 
     @if (isChecklist()) {
       <div class="editor__checklist">
@@ -59,6 +87,10 @@
             aria-hidden="true"
           ></i>
           {{ isChecklist() ? 'Convert to text note' : 'Convert to checklist' }}
+        </button>
+        <button type="button" class="editor__add-image" (click)="openImagePicker()">
+          <i class="fa-solid fa-image" aria-hidden="true"></i>
+          Add image
         </button>
         @if (isChecklist()) {
           <label class="editor__setting">

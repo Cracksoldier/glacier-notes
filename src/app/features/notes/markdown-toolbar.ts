@@ -1,6 +1,6 @@
 import { Component, input, output } from '@angular/core';
 
-export type ToolbarAction = 'bold' | 'italic' | 'h1' | 'h2' | 'ul' | 'ol' | 'link' | 'code';
+export type ToolbarAction = 'bold' | 'italic' | 'h1' | 'h2' | 'ul' | 'ol' | 'link' | 'code' | 'image';
 
 @Component({
   selector: 'app-markdown-toolbar',
@@ -68,5 +68,6 @@ export class MarkdownToolbar {
     { action: 'ol', title: 'Numbered list', icon: 'fa-list-ol' },
     { action: 'link', title: 'Link', icon: 'fa-link' },
     { action: 'code', title: 'Code', icon: 'fa-code' },
+    { action: 'image', title: 'Insert image', icon: 'fa-image' },
   ];
 }

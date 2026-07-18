@@ -2,6 +2,14 @@
   @if (note().pinned && !trashed()) {
     <i class="note-card__pin-badge fa-solid fa-thumbtack" aria-hidden="true"></i>
   }
+  @if (note().imageIds.length > 0) {
+    <div class="note-card__image-wrap">
+      <img class="note-card__image" [src]="note().imageIds[0] | glacierImg" alt="" (click)="openLightbox($event, note().imageIds[0])" />
+      @if (note().imageIds.length > 1) {
+        <span class="note-card__image-badge">+{{ note().imageIds.length - 1 }}</span>
+      }
+    </div>
+  }
   @if (note().title) {
     <h3 class="note-card__title">{{ note().title }}</h3>
   }

@@ -28,6 +28,14 @@ function requireObject<T>(value: unknown, name: string): T {
   return value as T;
 }
 
+export function gcImages(repos: Pick<Repos, 'notes' | 'images'>, imageIds: string[]): void {
+  for (const id of new Set(imageIds)) {
+    if (repos.images.has(id) && !repos.notes.isImageReferenced(id)) {
+      repos.images.delete(id);
+    }
+  }
+}
+
 export function registerIpc(repos: Repos): void {
   ipcMain.handle('app:ping', () => 'pong');
 
@@ -42,7 +50,7 @@ export function registerIpc(repos: Repos): void {
   ipcMain.handle('notebooks:delete', (_e, id: unknown) => {
     const notebookId = requireString(id, 'notebook id');
     repos.notebooks.delete(notebookId);
-    repos.notes.purgeByNotebook(notebookId);
+    gcImages(repos, repos.notes.purgeByNotebook(notebookId));
   });
   ipcMain.handle('notebooks:getDefaultId', () => repos.notebooks.getDefaultId());
 
@@ -69,7 +77,9 @@ export function registerIpc(repos: Repos): void {
   });
   ipcMain.handle('notes:trash', (_e, id: unknown) => repos.notes.trash(requireString(id, 'note id')));
   ipcMain.handle('notes:restore', (_e, id: unknown) => repos.notes.restore(requireString(id, 'note id')));
-  ipcMain.handle('notes:purge', (_e, id: unknown) => repos.notes.purge(requireString(id, 'note id')));
+  ipcMain.handle('notes:purge', (_e, id: unknown) => {
+    gcImages(repos, repos.notes.purge(requireString(id, 'note id')));
+  });
   ipcMain.handle('notes:move', (_e, id: unknown, notebookId: unknown) => {
     const target = requireString(notebookId, 'notebook id');
     if (!repos.notebooks.exists(target)) {
@@ -99,6 +109,14 @@ export function registerIpc(repos: Repos): void {
   });
   ipcMain.handle('images:getDataUrl', (_e, id: unknown) => repos.images.getDataUrl(requireString(id, 'image id')));
   ipcMain.handle('images:delete', (_e, id: unknown) => repos.images.delete(requireString(id, 'image id')));
+  ipcMain.handle('images:deleteIfUnreferenced', (_e, id: unknown) => {
+    const imageId = requireString(id, 'image id');
+    if (!repos.images.has(imageId) || repos.notes.isImageReferenced(imageId)) {
+      return false;
+    }
+    repos.images.delete(imageId);
+    return true;
+  });
 
   // Shell
   ipcMain.handle('shell:openExternal', (_e, url: unknown) => {

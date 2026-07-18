@@ -44,6 +44,15 @@ export class ImageStore {
     return asset;
   }
 
+  has(id: string): boolean {
+    return this.images.has(id);
+  }
+
+  getFileInfo(id: string): { path: string; mimeType: string } {
+    const asset = this.get(id);
+    return { path: this.imageFile(asset), mimeType: asset.mimeType };
+  }
+
   getDataUrl(id: string): string {
     const asset = this.get(id);
     const data = fs.readFileSync(this.imageFile(asset));

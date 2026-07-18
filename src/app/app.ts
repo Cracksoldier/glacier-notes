@@ -7,10 +7,11 @@ import { SettingsStore } from './core/store/settings-store';
 import { UiStore } from './core/store/ui-store';
 import { NoteEditorDialog } from './features/notes/note-editor-dialog';
 import { NoteGrid } from './features/notes/note-grid';
+import { ImageLightbox } from './shared/image-lightbox/image-lightbox';
 
 @Component({
   selector: 'app-root',
-  imports: [Header, Sidebar, NoteGrid, NoteEditorDialog],
+  imports: [Header, Sidebar, NoteGrid, NoteEditorDialog, ImageLightbox],
   templateUrl: './app.html',
   styleUrl: './app.scss',
 })

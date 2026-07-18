@@ -1,7 +1,12 @@
-import type { GlacierApi, Note, Notebook, Settings } from '../../../electron/api';
+import type { GlacierApi, ImageAsset, Note, Notebook, Settings } from '../../../electron/api';
 
 // In-memory fake of the preload bridge for renderer unit tests.
-export function installGlacierApiStub(): { notes: Note[]; notebooks: Notebook[]; settings: Settings } {
+export function installGlacierApiStub(): {
+  notes: Note[];
+  notebooks: Notebook[];
+  images: ImageAsset[];
+  settings: Settings;
+} {
   const now = new Date().toISOString();
   const defaultNotebook: Notebook = {
     id: 'nb-default',
@@ -13,6 +18,7 @@ export function installGlacierApiStub(): { notes: Note[]; notebooks: Notebook[];
   const state = {
     notebooks: [defaultNotebook] as Notebook[],
     notes: [] as Note[],
+    images: [] as ImageAsset[],
     settings: {
       theme: 'dark',
       language: 'en',
@@ -106,11 +112,21 @@ export function installGlacierApiStub(): { notes: Note[]; notebooks: Notebook[];
       delete: async () => undefined,
     },
     images: {
-      add: async () => {
-        throw new Error('not implemented in stub');
+      add: async (_data, mimeType, fileName) => {
+        const asset = { id: newId(), mimeType, ...(fileName ? { fileName } : {}) };
+        state.images.push(asset);
+        return asset;
       },
       getDataUrl: async () => '',
-      delete: async () => undefined,
+      delete: async (id) => {
+        state.images = state.images.filter((i) => i.id !== id);
+      },
+      deleteIfUnreferenced: async (id) => {
+        const referenced = state.notes.some((n) => n.imageIds.includes(id) || n.content.includes(id));
+        if (referenced || !state.images.some((i) => i.id === id)) return false;
+        state.images = state.images.filter((i) => i.id !== id);
+        return true;
+      },
     },
     settings: {
       get: async () => ({ ...state.settings }),

@@ -12,11 +12,13 @@ import {
 } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import type { ChecklistItem, Note, NoteUpdatePatch } from '../../../../electron/api';
+import { ImageUploadService } from '../../core/images/image-upload';
 import { MarkdownService } from '../../core/markdown/markdown.service';
 import { NoteStore } from '../../core/store/note-store';
 import { SettingsStore } from '../../core/store/settings-store';
 import { UiStore } from '../../core/store/ui-store';
 import { Autofocus } from '../../shared/autofocus';
+import { GlacierImgPipe } from '../../shared/glacier-img.pipe';
 import { ChecklistEditor } from './checklist-editor';
 import { checklistToText, textToChecklist } from './checklist-model';
 import { insertLink, orderedList, prefixLines, toggleCode, wrapSelection } from './markdown-edit';
@@ -26,7 +28,7 @@ const SAVE_DEBOUNCE_MS = 500;
 
 @Component({
   selector: 'app-note-editor-dialog',
-  imports: [Autofocus, ChecklistEditor, DatePipe, MarkdownToolbar],
+  imports: [Autofocus, ChecklistEditor, DatePipe, GlacierImgPipe, MarkdownToolbar],
   templateUrl: './note-editor-dialog.html',
   styleUrl: './note-editor-dialog.scss',
 })
@@ -35,7 +37,8 @@ export class NoteEditorDialog implements OnInit, AfterViewInit, OnDestroy {
 
   private readonly markdown = inject(MarkdownService);
   private readonly noteStore = inject(NoteStore);
-  private readonly ui = inject(UiStore);
+  private readonly upload = inject(ImageUploadService);
+  protected readonly ui = inject(UiStore);
   protected readonly settings = inject(SettingsStore);
 
   protected readonly title = signal('');
@@ -47,11 +50,15 @@ export class NoteEditorDialog implements OnInit, AfterViewInit, OnDestroy {
 
   private readonly dialogRef = viewChild.required<ElementRef<HTMLDialogElement>>('dialog');
   private readonly textareaRef = viewChild<ElementRef<HTMLTextAreaElement>>('textarea');
+  private readonly fileInputRef = viewChild.required<ElementRef<HTMLInputElement>>('fileInput');
 
   private saveTimer: ReturnType<typeof setTimeout> | null = null;
   private dirty = false;
   private closing = false;
   private converting = false;
+  // Set when the picker was opened from the markdown toolbar: the added
+  // image should also be embedded at the cursor, not just attached.
+  private insertOnAdd = false;
   private readonly flushOnUnload = () => void this.flush();
 
   ngOnInit(): void {
@@ -107,7 +114,88 @@ export class NoteEditorDialog implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
+  protected openImagePicker(insertOnAdd = false): void {
+    this.insertOnAdd = insertOnAdd && !this.isChecklist();
+    this.fileInputRef().nativeElement.click();
+  }
+
+  protected onFilesPicked(input: HTMLInputElement): void {
+    const files = input.files ? [...input.files] : [];
+    input.value = '';
+    void this.addImages(files);
+  }
+
+  protected onDragOver(event: DragEvent): void {
+    if (event.dataTransfer?.types.includes('Files')) {
+      event.preventDefault();
+    }
+  }
+
+  protected onDrop(event: DragEvent): void {
+    const files = [...(event.dataTransfer?.files ?? [])].filter((f) => this.upload.isSupported(f.type));
+    if (files.length === 0) return;
+    event.preventDefault();
+    void this.addImages(files);
+  }
+
+  protected onPaste(event: ClipboardEvent): void {
+    const files = [...(event.clipboardData?.items ?? [])]
+      .filter((item) => item.kind === 'file' && this.upload.isSupported(item.type))
+      .map((item) => item.getAsFile())
+      .filter((f): f is File => f !== null);
+    if (files.length === 0) return;
+    event.preventDefault();
+    void this.addImages(files);
+  }
+
+  protected async removeImage(id: string): Promise<void> {
+    const embed = new RegExp(`!\\[[^\\]]*\\]\\(glacier-img://${id}\\)`, 'g');
+    const content = this.content().replace(embed, '');
+    const imageIds = this.note().imageIds.filter((i) => i !== id);
+    this.content.set(content);
+    await this.noteStore.updateInPlace(this.note().id, { content, imageIds });
+    await window.glacierApi.images.deleteIfUnreferenced(id);
+  }
+
+  private async addImages(files: File[]): Promise<void> {
+    const insert = this.insertOnAdd;
+    this.insertOnAdd = false;
+    // Local copy: the note() input only refreshes on the next change-detection
+    // pass, so reading it inside the loop would drop earlier additions.
+    let imageIds = this.note().imageIds;
+    for (const file of files) {
+      if (!this.upload.isSupported(file.type)) continue;
+      const asset = await this.upload.attach(file, file.name);
+      imageIds = [...imageIds, asset.id];
+      await this.noteStore.updateInPlace(this.note().id, { imageIds });
+      if (insert) {
+        this.insertEmbed(asset.id);
+      }
+    }
+  }
+
+  private insertEmbed(id: string): void {
+    const embed = `![image](glacier-img://${id})`;
+    const textarea = this.textareaRef()?.nativeElement;
+    if (textarea) {
+      const { value, selectionStart, selectionEnd } = textarea;
+      const next = value.slice(0, selectionStart) + embed + value.slice(selectionEnd);
+      const caret = selectionStart + embed.length;
+      textarea.value = next;
+      this.content.set(next);
+      textarea.focus();
+      textarea.setSelectionRange(caret, caret);
+    } else {
+      this.content.set(this.content() ? `${this.content()}\n${embed}` : embed);
+    }
+    this.scheduleSave();
+  }
+
   protected onToolbar(action: ToolbarAction): void {
+    if (action === 'image') {
+      this.openImagePicker(true);
+      return;
+    }
     const textarea = this.textareaRef()?.nativeElement;
     if (!textarea) return;
     const { value, selectionStart, selectionEnd } = textarea;
