@@ -10,5 +10,5 @@
     "skipLibCheck": true,
     "sourceMap": false
   },
-  "include": ["*.ts"]
+  "include": ["**/*.ts"]
 }

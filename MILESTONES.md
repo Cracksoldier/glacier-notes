@@ -22,12 +22,12 @@ Implementation plan derived from [SPECIFICATION.md](SPECIFICATION.md). Each mile
 
 **Goal:** JSON-file storage (Option A) behind a repository abstraction, exposed via typed IPC.
 
-- [ ] Data model types: `Notebook`, `Note`, `ChecklistItem`, `Label`, `ImageAsset` (§3)
-- [ ] Repository layer in main process: `notebook-repo`, `note-repo`, `image-store` over JSON files + `images/` dir in `userData` (§4, §8)
-- [ ] Atomic writes (temp file + rename), debounced auto-save, `schemaVersion` field (§4)
-- [ ] Settings store (`settings.json`) with defaults from §7
-- [ ] IPC surface implemented and typed end-to-end: `notebooks.*`, `notes.*` (incl. `trash`/`restore`/`purge`), `labels.*`, `settings.*` (§9)
-- [ ] Default notebook "Notes" created on first launch, not deletable (§5.1)
+- [x] Data model types: `Notebook`, `Note`, `ChecklistItem`, `Label`, `ImageAsset` (§3)
+- [x] Repository layer in main process: `notebook-repo`, `note-repo`, `image-store` over JSON files + `images/` dir in `userData` (§4, §8)
+- [x] Atomic writes (temp file + rename), debounced auto-save, `schemaVersion` field (§4)
+- [x] Settings store (`settings.json`) with defaults from §7
+- [x] IPC surface implemented and typed end-to-end: `notebooks.*`, `notes.*` (incl. `trash`/`restore`/`purge`), `labels.*`, `settings.*` (§9)
+- [x] Default notebook "Notes" created on first launch, not deletable (§5.1)
 
 **Done when:** CRUD operations from renderer dev-console persist across app restarts; storage files human-readable.
 

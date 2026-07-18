@@ -1,6 +1,13 @@
-import { app, BrowserWindow, ipcMain, session } from 'electron';
+import { app, BrowserWindow, session } from 'electron';
 import * as fs from 'fs';
 import * as path from 'path';
+import { registerIpc } from './ipc';
+import { ImageStore } from './storage/image-store';
+import { DebouncedWriter } from './storage/json-store';
+import { LabelRepo } from './storage/label-repo';
+import { NotebookRepo } from './storage/notebook-repo';
+import { NoteRepo } from './storage/note-repo';
+import { SettingsStore } from './storage/settings-store';
 import { createWindowState } from './window-state';
 
 const isDev = process.env['GLACIER_DEV'] === '1';
@@ -118,7 +125,23 @@ function createMainWindow(): void {
 
 app.whenReady().then(() => {
   installCsp();
-  ipcMain.handle('app:ping', () => 'pong');
+
+  const baseDir = app.getPath('userData');
+  const writer = new DebouncedWriter();
+  const notebooks = new NotebookRepo(baseDir, writer);
+  const notes = new NoteRepo(baseDir, writer);
+  const labels = new LabelRepo(baseDir, writer, notes);
+  const images = new ImageStore(baseDir);
+  const settings = new SettingsStore(baseDir, app.getLocale());
+  notebooks.init();
+  notes.init();
+  labels.init();
+  images.init();
+  settings.init();
+  notes.purgeExpired(settings.get().trashAutoPurgeDays);
+  registerIpc({ notebooks, notes, labels, images, settings });
+  app.on('before-quit', () => writer.flush());
+
   createMainWindow();
 
   app.on('activate', () => {
