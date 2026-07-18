@@ -1,0 +1,14 @@
+<dialog #dialog class="confirm" (cancel)="onCancel($event)" (click)="onBackdropClick($event)">
+  <div class="confirm__body">
+    <h3 class="confirm__title">{{ title() }}</h3>
+    @if (message()) {
+      <p class="confirm__message">{{ message() }}</p>
+    }
+    <div class="confirm__actions">
+      <button type="button" class="confirm__button" (click)="closed.emit(false)">Cancel</button>
+      <button type="button" class="confirm__button confirm__button--danger" (click)="closed.emit(true)">
+        {{ confirmLabel() }}
+      </button>
+    </div>
+  </div>
+</dialog>

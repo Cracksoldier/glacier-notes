@@ -37,13 +37,13 @@ Implementation plan derived from [SPECIFICATION.md](SPECIFICATION.md). Each mile
 
 **Goal:** The core Keep-like experience with text notes.
 
-- [ ] Notebook sidebar: create, rename, delete (with confirm + move-or-delete choice for contained notes), note counts, reorder (§5.1)
-- [ ] Note card grid (masonry) with title + content preview; pinned section on top (§5.2, §6)
-- [ ] Note editor modal: title + markdown content, debounced auto-save (§5.2)
-- [ ] Markdown rendering with sanitization (marked/markdown-it + DOMPurify); external links open via `shell.openExternal` (§5.3)
-- [ ] Markdown editor toolbar (bold, italic, headings, lists, link, code) (§5.3)
-- [ ] Note actions: pin, archive (+ Archive view), move to notebook (§5.2)
-- [ ] Trash: delete → trash, Trash view with restore / delete permanently / empty trash; auto-purge after `trashAutoPurgeDays` (default 30, 0 = never) (§5.2)
+- [x] Notebook sidebar: create, rename, delete (with confirm + move-or-delete choice for contained notes), note counts, reorder (§5.1)
+- [x] Note card grid (masonry) with title + content preview; pinned section on top (§5.2, §6)
+- [x] Note editor modal: title + markdown content, debounced auto-save (§5.2)
+- [x] Markdown rendering with sanitization (marked/markdown-it + DOMPurify); external links open via `shell.openExternal` (§5.3)
+- [x] Markdown editor toolbar (bold, italic, headings, lists, link, code) (§5.3)
+- [x] Note actions: pin, archive (+ Archive view), move to notebook (§5.2)
+- [x] Trash: delete → trash, Trash view with restore / delete permanently / empty trash; auto-purge after `trashAutoPurgeDays` (default 30, 0 = never) (§5.2)
 
 **Done when:** acceptance criteria 3 (partially), 4 (text half), 11 pass.
 

@@ -2,18 +2,77 @@
   <section class="sidebar__section">
     <h2 class="sidebar__heading">Notebooks</h2>
     <ul class="sidebar__list">
+      @for (notebook of notebookStore.notebooks(); track notebook.id; let first = $first; let last = $last) {
+        <li class="sidebar__row">
+          @if (editingId() === notebook.id) {
+            <input
+              class="sidebar__input"
+              #renameInput
+              appAutofocus
+              [value]="notebook.name"
+              (keydown.enter)="renameInput.blur()"
+              (keydown.escape)="editingId.set(null)"
+              (blur)="commitRename(notebook, renameInput.value)"
+            />
+          } @else {
+            <button
+              type="button"
+              class="sidebar__item"
+              [class.sidebar__item--active]="selectedNotebookId() === notebook.id"
+              (click)="ui.selectNotebook(notebook.id)"
+            >
+              <i class="fa-solid fa-book" aria-hidden="true"></i>
+              <span class="sidebar__name">{{ notebook.name }}</span>
+              <span class="sidebar__count">{{ noteStore.countsByNotebook().get(notebook.id) ?? 0 }}</span>
+            </button>
+            <span class="sidebar__actions">
+              <button
+                type="button"
+                class="sidebar__action"
+                title="Move up"
+                [disabled]="first"
+                (click)="reorder($event, notebook.id, 'up')"
+              >
+                <i class="fa-solid fa-chevron-up" aria-hidden="true"></i>
+              </button>
+              <button
+                type="button"
+                class="sidebar__action"
+                title="Move down"
+                [disabled]="last"
+                (click)="reorder($event, notebook.id, 'down')"
+              >
+                <i class="fa-solid fa-chevron-down" aria-hidden="true"></i>
+              </button>
+              <button type="button" class="sidebar__action" title="Rename" (click)="editingId.set(notebook.id)">
+                <i class="fa-solid fa-pen" aria-hidden="true"></i>
+              </button>
+              @if (notebook.id !== notebookStore.defaultId()) {
+                <button type="button" class="sidebar__action" title="Delete" (click)="deleteTarget.set(notebook)">
+                  <i class="fa-solid fa-trash-can" aria-hidden="true"></i>
+                </button>
+              }
+            </span>
+          }
+        </li>
+      }
       <li>
-        <button type="button" class="sidebar__item sidebar__item--active">
-          <i class="fa-solid fa-book" aria-hidden="true"></i>
-          <span>Notes</span>
-          <span class="sidebar__count">0</span>
-        </button>
-      </li>
-      <li>
-        <button type="button" class="sidebar__item sidebar__item--muted" disabled>
-          <i class="fa-solid fa-plus" aria-hidden="true"></i>
-          <span>New notebook</span>
-        </button>
+        @if (creating()) {
+          <input
+            class="sidebar__input"
+            #createInput
+            appAutofocus
+            placeholder="Notebook name"
+            (keydown.enter)="createInput.blur()"
+            (keydown.escape)="creating.set(false)"
+            (blur)="commitCreate(createInput.value)"
+          />
+        } @else {
+          <button type="button" class="sidebar__item sidebar__item--muted" (click)="creating.set(true)">
+            <i class="fa-solid fa-plus" aria-hidden="true"></i>
+            <span>New notebook</span>
+          </button>
+        }
       </li>
     </ul>
   </section>
@@ -31,15 +90,27 @@
   <section class="sidebar__section sidebar__section--footer">
     <ul class="sidebar__list">
       <li>
-        <button type="button" class="sidebar__item" disabled>
+        <button
+          type="button"
+          class="sidebar__item"
+          [class.sidebar__item--active]="ui.view()?.kind === 'archive'"
+          (click)="ui.showArchive()"
+        >
           <i class="fa-solid fa-box-archive" aria-hidden="true"></i>
           <span>Archive</span>
+          <span class="sidebar__count">{{ noteStore.archived().length }}</span>
         </button>
       </li>
       <li>
-        <button type="button" class="sidebar__item" disabled>
+        <button
+          type="button"
+          class="sidebar__item"
+          [class.sidebar__item--active]="ui.view()?.kind === 'trash'"
+          (click)="ui.showTrash()"
+        >
           <i class="fa-solid fa-trash-can" aria-hidden="true"></i>
           <span>Trash</span>
+          <span class="sidebar__count">{{ noteStore.trashed().length }}</span>
         </button>
       </li>
       <li>
@@ -51,3 +122,12 @@
     </ul>
   </section>
 </nav>
+
+@if (deleteTarget(); as target) {
+  <app-notebook-delete-dialog
+    [notebook]="target"
+    [notebooks]="notebookStore.notebooks()"
+    [noteCount]="deleteTargetNoteCount()"
+    (closed)="onDeleteClosed($event)"
+  />
+}

@@ -1,0 +1,11 @@
+<div class="move-menu" (click)="$event.stopPropagation()">
+  <p class="move-menu__heading">Move to</p>
+  @for (target of targets(); track target.id) {
+    <button type="button" class="move-menu__item" (click)="choose(target.id)">
+      <i class="fa-solid fa-book" aria-hidden="true"></i>
+      <span>{{ target.name }}</span>
+    </button>
+  } @empty {
+    <p class="move-menu__empty">No other notebooks</p>
+  }
+</div>

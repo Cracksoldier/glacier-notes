@@ -36,6 +36,9 @@ const api: GlacierApi = {
     get: () => ipcRenderer.invoke('settings:get'),
     set: (patch) => ipcRenderer.invoke('settings:set', patch),
   },
+  shell: {
+    openExternal: (url: string) => ipcRenderer.invoke('shell:openExternal', url),
+  },
 };
 
 contextBridge.exposeInMainWorld('glacierApi', api);

@@ -50,4 +50,7 @@ export interface GlacierApi {
     get(): Promise<Settings>;
     set(patch: Partial<Settings>): Promise<Settings>;
   };
+  shell: {
+    openExternal(url: string): Promise<void>;
+  };
 }

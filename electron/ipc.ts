@@ -1,4 +1,4 @@
-import { ipcMain } from 'electron';
+import { ipcMain, shell } from 'electron';
 import { ImageStore } from './storage/image-store';
 import { LabelRepo } from './storage/label-repo';
 import { Label, Notebook, NoteCreateInput, NoteFilter, NoteUpdatePatch, Settings } from './storage/models';
@@ -95,6 +95,15 @@ export function registerIpc(repos: Repos): void {
   });
   ipcMain.handle('images:getDataUrl', (_e, id: unknown) => repos.images.getDataUrl(requireString(id, 'image id')));
   ipcMain.handle('images:delete', (_e, id: unknown) => repos.images.delete(requireString(id, 'image id')));
+
+  // Shell
+  ipcMain.handle('shell:openExternal', (_e, url: unknown) => {
+    const parsed = new URL(requireString(url, 'url'));
+    if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
+      throw new Error(`Refusing to open non-http(s) URL: ${parsed.protocol}`);
+    }
+    return shell.openExternal(parsed.href);
+  });
 
   // Settings
   ipcMain.handle('settings:get', () => repos.settings.get());

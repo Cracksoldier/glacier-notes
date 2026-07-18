@@ -1,8 +1,10 @@
 import { TestBed } from '@angular/core/testing';
 import { App } from './app';
+import { installGlacierApiStub } from './testing/glacier-api-stub';
 
 describe('App', () => {
   beforeEach(async () => {
+    installGlacierApiStub();
     await TestBed.configureTestingModule({
       imports: [App],
     }).compileComponents();
@@ -17,6 +19,7 @@ describe('App', () => {
   it('should render the app shell', async () => {
     const fixture = TestBed.createComponent(App);
     await fixture.whenStable();
+    fixture.detectChanges();
     const compiled = fixture.nativeElement as HTMLElement;
     expect(compiled.querySelector('.header__title')?.textContent).toContain('Glacier Notes');
     expect(compiled.querySelector('.empty-state__title')?.textContent).toContain('No notes yet');

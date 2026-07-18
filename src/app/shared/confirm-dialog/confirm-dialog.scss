@@ -1,0 +1,47 @@
+.confirm {
+  width: 380px;
+  max-width: 90vw;
+}
+
+.confirm__body {
+  padding: 20px;
+}
+
+.confirm__title {
+  margin: 0 0 10px;
+  font-size: 16px;
+}
+
+.confirm__message {
+  margin: 0 0 18px;
+  color: var(--color-text-muted);
+  line-height: 1.5;
+}
+
+.confirm__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.confirm__button {
+  padding: 8px 16px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: transparent;
+  cursor: pointer;
+
+  &:hover {
+    background-color: var(--color-surface-elevated);
+  }
+}
+
+.confirm__button--danger {
+  border-color: transparent;
+  background-color: #c0392b;
+  color: #ffffff;
+
+  &:hover {
+    background-color: #d64534;
+  }
+}

@@ -1,0 +1,62 @@
+<article class="note-card" [class.note-card--trashed]="trashed()" (click)="open()">
+  @if (note().pinned && !trashed()) {
+    <i class="note-card__pin-badge fa-solid fa-thumbtack" aria-hidden="true"></i>
+  }
+  @if (note().title) {
+    <h3 class="note-card__title">{{ note().title }}</h3>
+  }
+  @if (note().content) {
+    <div class="note-card__preview markdown-body" [innerHTML]="previewHtml()" (click)="onPreviewClick($event)"></div>
+  } @else if (!note().title) {
+    <p class="note-card__blank">Empty note</p>
+  }
+
+  <div class="note-card__actions" (click)="$event.stopPropagation()">
+    @if (trashed()) {
+      <button type="button" class="note-card__action" title="Restore" (click)="noteStore.restore(note().id)">
+        <i class="fa-solid fa-trash-arrow-up" aria-hidden="true"></i>
+      </button>
+      <button type="button" class="note-card__action" title="Delete forever" (click)="purgeConfirm.set(true)">
+        <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+      </button>
+    } @else {
+      <button
+        type="button"
+        class="note-card__action"
+        [class.note-card__action--active]="note().pinned"
+        [title]="note().pinned ? 'Unpin' : 'Pin'"
+        (click)="noteStore.togglePin(note())"
+      >
+        <i class="fa-solid fa-thumbtack" aria-hidden="true"></i>
+      </button>
+      <button
+        type="button"
+        class="note-card__action"
+        [title]="note().archived ? 'Unarchive' : 'Archive'"
+        (click)="noteStore.setArchived(note().id, !note().archived)"
+      >
+        <i class="fa-solid" [class.fa-box-archive]="!note().archived" [class.fa-box-open]="note().archived" aria-hidden="true"></i>
+      </button>
+      <span class="note-card__move">
+        <button type="button" class="note-card__action" title="Move to notebook" (click)="toggleMoveMenu($event)">
+          <i class="fa-solid fa-folder-open" aria-hidden="true"></i>
+        </button>
+        @if (moveMenuOpen()) {
+          <app-move-note-menu [note]="note()" (closed)="moveMenuOpen.set(false)" />
+        }
+      </span>
+      <button type="button" class="note-card__action" title="Delete" (click)="noteStore.trash(note().id)">
+        <i class="fa-solid fa-trash-can" aria-hidden="true"></i>
+      </button>
+    }
+  </div>
+</article>
+
+@if (purgeConfirm()) {
+  <app-confirm-dialog
+    title="Delete note forever?"
+    message="This note will be permanently deleted. This cannot be undone."
+    confirmLabel="Delete forever"
+    (closed)="onPurgeConfirmed($event)"
+  />
+}

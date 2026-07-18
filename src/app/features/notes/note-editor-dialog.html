@@ -1,0 +1,46 @@
+<dialog #dialog class="editor" (cancel)="onCancel($event)" (click)="onBackdropClick($event)">
+  <div class="editor__body">
+    <div class="editor__header">
+      <input
+        class="editor__title"
+        appAutofocus
+        placeholder="Title"
+        [value]="title()"
+        (input)="onTitleInput($any($event.target).value)"
+      />
+      <button type="button" class="editor__close" title="Close" (click)="close()">
+        <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+      </button>
+    </div>
+
+    <div class="editor__toolbar">
+      <app-markdown-toolbar [disabled]="previewMode()" (action)="onToolbar($event)" />
+      <button
+        type="button"
+        class="editor__preview-toggle"
+        [class.editor__preview-toggle--active]="previewMode()"
+        [title]="previewMode() ? 'Edit' : 'Preview'"
+        (click)="previewMode.set(!previewMode())"
+      >
+        <i class="fa-solid" [class.fa-eye]="!previewMode()" [class.fa-pen]="previewMode()" aria-hidden="true"></i>
+        {{ previewMode() ? 'Edit' : 'Preview' }}
+      </button>
+    </div>
+
+    @if (previewMode()) {
+      <div class="editor__preview markdown-body" [innerHTML]="previewHtml()" (click)="onPreviewClick($event)"></div>
+    } @else {
+      <textarea
+        class="editor__content"
+        #textarea
+        placeholder="Take a note…"
+        [value]="content()"
+        (input)="onContentInput($any($event.target).value)"
+      ></textarea>
+    }
+
+    <div class="editor__footer">
+      <span class="editor__meta">Edited {{ note().updatedAt | date: 'medium' }}</span>
+    </div>
+  </div>
+</dialog>

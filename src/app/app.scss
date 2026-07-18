@@ -21,6 +21,7 @@
 .shell__toolbar {
   display: flex;
   gap: 10px;
+  margin-bottom: 20px;
 }
 
 .new-note-button {
@@ -48,30 +49,3 @@
   }
 }
 
-.empty-state {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  color: var(--color-text-muted);
-
-  > i {
-    font-size: 56px;
-    margin-bottom: 12px;
-    color: var(--color-surface-elevated);
-  }
-}
-
-.empty-state__title {
-  margin: 0;
-  font-size: 18px;
-  font-weight: 600;
-  color: var(--color-text);
-}
-
-.empty-state__hint {
-  margin: 0;
-  font-size: 13px;
-}

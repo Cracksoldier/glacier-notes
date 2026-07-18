@@ -1,0 +1,36 @@
+<dialog #dialog class="nb-delete" (cancel)="onCancel($event)" (click)="onBackdropClick($event)">
+  <div class="nb-delete__body">
+    <h3 class="nb-delete__title">Delete notebook "{{ notebook().name }}"?</h3>
+
+    @if (noteCount() > 0) {
+      <p class="nb-delete__message">
+        This notebook contains {{ noteCount() }} {{ noteCount() === 1 ? 'note' : 'notes' }}.
+      </p>
+      <label class="nb-delete__option">
+        <input type="radio" name="mode" [checked]="mode() === 'delete'" (change)="mode.set('delete')" />
+        <span>Delete the notes too</span>
+      </label>
+      <label class="nb-delete__option">
+        <input type="radio" name="mode" [checked]="mode() === 'move'" (change)="mode.set('move')" />
+        <span>Move them to:</span>
+        <select
+          class="nb-delete__select"
+          [disabled]="mode() !== 'move'"
+          [value]="targetId()"
+          (change)="onTargetChange($event)"
+        >
+          @for (target of moveTargets(); track target.id) {
+            <option [value]="target.id">{{ target.name }}</option>
+          }
+        </select>
+      </label>
+    } @else {
+      <p class="nb-delete__message">This notebook is empty.</p>
+    }
+
+    <div class="nb-delete__actions">
+      <button type="button" class="nb-delete__button" (click)="closed.emit(null)">Cancel</button>
+      <button type="button" class="nb-delete__button nb-delete__button--danger" (click)="confirm()">Delete</button>
+    </div>
+  </div>
+</dialog>

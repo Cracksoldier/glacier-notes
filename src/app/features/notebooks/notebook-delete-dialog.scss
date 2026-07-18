@@ -1,0 +1,68 @@
+.nb-delete {
+  width: 420px;
+  max-width: 90vw;
+}
+
+.nb-delete__body {
+  padding: 20px;
+}
+
+.nb-delete__title {
+  margin: 0 0 10px;
+  font-size: 16px;
+}
+
+.nb-delete__message {
+  margin: 0 0 14px;
+  color: var(--color-text-muted);
+}
+
+.nb-delete__option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+  cursor: pointer;
+}
+
+.nb-delete__select {
+  flex: 1;
+  padding: 6px 8px;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  background-color: var(--color-bg);
+  color: var(--color-text);
+
+  &:disabled {
+    opacity: 0.5;
+  }
+}
+
+.nb-delete__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.nb-delete__button {
+  padding: 8px 16px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: transparent;
+  cursor: pointer;
+
+  &:hover {
+    background-color: var(--color-surface-elevated);
+  }
+}
+
+.nb-delete__button--danger {
+  border-color: transparent;
+  background-color: #c0392b;
+  color: #ffffff;
+
+  &:hover {
+    background-color: #d64534;
+  }
+}

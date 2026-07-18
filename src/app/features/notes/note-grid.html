@@ -1,0 +1,46 @@
+@if (ui.view()?.kind === 'trash' && notes().length > 0) {
+  <div class="grid__trash-bar">
+    <span class="grid__trash-hint">
+      <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
+      Notes in Trash are deleted automatically.
+    </span>
+    <button type="button" class="grid__empty-trash" (click)="emptyTrashConfirm.set(true)">Empty trash</button>
+  </div>
+}
+
+@if (notes().length === 0) {
+  <div class="empty-state">
+    <i class="{{ emptyState().icon }}" aria-hidden="true"></i>
+    <p class="empty-state__title">{{ emptyState().title }}</p>
+    <p class="empty-state__hint">{{ emptyState().hint }}</p>
+  </div>
+} @else {
+  @if (pinned().length > 0) {
+    <h2 class="grid__heading">
+      <i class="fa-solid fa-thumbtack" aria-hidden="true"></i>
+      Pinned
+    </h2>
+    <div class="grid__masonry">
+      @for (note of pinned(); track note.id) {
+        <app-note-card [note]="note" />
+      }
+    </div>
+    @if (others().length > 0) {
+      <h2 class="grid__heading">Others</h2>
+    }
+  }
+  <div class="grid__masonry">
+    @for (note of others(); track note.id) {
+      <app-note-card [note]="note" />
+    }
+  </div>
+}
+
+@if (emptyTrashConfirm()) {
+  <app-confirm-dialog
+    title="Empty trash?"
+    message="All notes in the trash will be deleted permanently. This cannot be undone."
+    confirmLabel="Empty trash"
+    (closed)="onEmptyTrashConfirmed($event)"
+  />
+}
