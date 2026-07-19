@@ -1,7 +1,14 @@
 import { ipcMain, shell } from 'electron';
 import { ImageStore } from './storage/image-store';
 import { LabelRepo } from './storage/label-repo';
-import { Label, Notebook, NoteCreateInput, NoteFilter, NoteUpdatePatch, Settings } from './storage/models';
+import {
+  Label,
+  Notebook,
+  NoteCreateInput,
+  NoteFilter,
+  NoteUpdatePatch,
+  Settings,
+} from './storage/models';
 import { NotebookRepo } from './storage/notebook-repo';
 import { NoteRepo } from './storage/note-repo';
 import { SettingsStore } from './storage/settings-store';
@@ -36,7 +43,11 @@ export function gcImages(repos: Pick<Repos, 'notes' | 'images'>, imageIds: strin
   }
 }
 
-export function registerIpc(repos: Repos): void {
+export interface IpcHooks {
+  setSettings?(prev: Settings, patch: Partial<Settings>, commit: () => Settings): Settings;
+}
+
+export function registerIpc(repos: Repos, hooks?: IpcHooks): void {
   ipcMain.handle('app:ping', () => 'pong');
 
   // Notebooks
@@ -45,7 +56,10 @@ export function registerIpc(repos: Repos): void {
     repos.notebooks.create(requireString(name, 'notebook name')),
   );
   ipcMain.handle('notebooks:update', (_e, id: unknown, patch: unknown) =>
-    repos.notebooks.update(requireString(id, 'notebook id'), requireObject<Partial<Notebook>>(patch, 'patch')),
+    repos.notebooks.update(
+      requireString(id, 'notebook id'),
+      requireObject<Partial<Notebook>>(patch, 'patch'),
+    ),
   );
   ipcMain.handle('notebooks:delete', (_e, id: unknown) => {
     const notebookId = requireString(id, 'notebook id');
@@ -55,7 +69,9 @@ export function registerIpc(repos: Repos): void {
   ipcMain.handle('notebooks:getDefaultId', () => repos.notebooks.getDefaultId());
 
   // Notes
-  ipcMain.handle('notes:list', (_e, filter: unknown) => repos.notes.list((filter ?? {}) as NoteFilter));
+  ipcMain.handle('notes:list', (_e, filter: unknown) =>
+    repos.notes.list((filter ?? {}) as NoteFilter),
+  );
   ipcMain.handle('notes:get', (_e, id: unknown) => repos.notes.get(requireString(id, 'note id')));
   ipcMain.handle('notes:create', (_e, input: unknown) => {
     const noteInput = requireObject<NoteCreateInput>(input, 'note input');
@@ -70,13 +86,21 @@ export function registerIpc(repos: Repos): void {
   });
   ipcMain.handle('notes:update', (_e, id: unknown, patch: unknown) => {
     const notePatch = requireObject<NoteUpdatePatch>(patch, 'patch');
-    if (notePatch.type !== undefined && notePatch.type !== 'text' && notePatch.type !== 'checklist') {
+    if (
+      notePatch.type !== undefined &&
+      notePatch.type !== 'text' &&
+      notePatch.type !== 'checklist'
+    ) {
       throw new Error('Invalid note type');
     }
     return repos.notes.update(requireString(id, 'note id'), notePatch);
   });
-  ipcMain.handle('notes:trash', (_e, id: unknown) => repos.notes.trash(requireString(id, 'note id')));
-  ipcMain.handle('notes:restore', (_e, id: unknown) => repos.notes.restore(requireString(id, 'note id')));
+  ipcMain.handle('notes:trash', (_e, id: unknown) =>
+    repos.notes.trash(requireString(id, 'note id')),
+  );
+  ipcMain.handle('notes:restore', (_e, id: unknown) =>
+    repos.notes.restore(requireString(id, 'note id')),
+  );
   ipcMain.handle('notes:purge', (_e, id: unknown) => {
     gcImages(repos, repos.notes.purge(requireString(id, 'note id')));
   });
@@ -90,11 +114,18 @@ export function registerIpc(repos: Repos): void {
 
   // Labels
   ipcMain.handle('labels:list', () => repos.labels.list());
-  ipcMain.handle('labels:create', (_e, name: unknown) => repos.labels.create(requireString(name, 'label name')));
-  ipcMain.handle('labels:update', (_e, id: unknown, patch: unknown) =>
-    repos.labels.update(requireString(id, 'label id'), requireObject<Partial<Label>>(patch, 'patch')),
+  ipcMain.handle('labels:create', (_e, name: unknown) =>
+    repos.labels.create(requireString(name, 'label name')),
   );
-  ipcMain.handle('labels:delete', (_e, id: unknown) => repos.labels.delete(requireString(id, 'label id')));
+  ipcMain.handle('labels:update', (_e, id: unknown, patch: unknown) =>
+    repos.labels.update(
+      requireString(id, 'label id'),
+      requireObject<Partial<Label>>(patch, 'patch'),
+    ),
+  );
+  ipcMain.handle('labels:delete', (_e, id: unknown) =>
+    repos.labels.delete(requireString(id, 'label id')),
+  );
 
   // Images
   ipcMain.handle('images:add', (_e, data: unknown, mimeType: unknown, fileName?: unknown) => {
@@ -107,8 +138,12 @@ export function registerIpc(repos: Repos): void {
       fileName === undefined ? undefined : requireString(fileName, 'file name'),
     );
   });
-  ipcMain.handle('images:getDataUrl', (_e, id: unknown) => repos.images.getDataUrl(requireString(id, 'image id')));
-  ipcMain.handle('images:delete', (_e, id: unknown) => repos.images.delete(requireString(id, 'image id')));
+  ipcMain.handle('images:getDataUrl', (_e, id: unknown) =>
+    repos.images.getDataUrl(requireString(id, 'image id')),
+  );
+  ipcMain.handle('images:delete', (_e, id: unknown) =>
+    repos.images.delete(requireString(id, 'image id')),
+  );
   ipcMain.handle('images:deleteIfUnreferenced', (_e, id: unknown) => {
     const imageId = requireString(id, 'image id');
     if (!repos.images.has(imageId) || repos.notes.isImageReferenced(imageId)) {
@@ -129,7 +164,10 @@ export function registerIpc(repos: Repos): void {
 
   // Settings
   ipcMain.handle('settings:get', () => repos.settings.get());
-  ipcMain.handle('settings:set', (_e, patch: unknown) =>
-    repos.settings.set(requireObject<Partial<Settings>>(patch, 'settings patch')),
-  );
+  ipcMain.handle('settings:set', (_e, patch: unknown) => {
+    const prev = repos.settings.get();
+    const settingsPatch = requireObject<Partial<Settings>>(patch, 'settings patch');
+    const commit = () => repos.settings.set(settingsPatch);
+    return hooks?.setSettings ? hooks.setSettings(prev, settingsPatch, commit) : commit();
+  });
 }

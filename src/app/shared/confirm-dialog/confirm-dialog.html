@@ -8,7 +8,18 @@
       <button type="button" class="confirm__button" (click)="closed.emit(false)">
         {{ i18n.t('common.cancel') }}
       </button>
-      <button type="button" class="confirm__button confirm__button--danger" (click)="closed.emit(true)">
+      @if (secondaryLabel()) {
+        <button type="button" class="confirm__button" (click)="secondary.emit()">
+          {{ secondaryLabel() }}
+        </button>
+      }
+      <button
+        type="button"
+        class="confirm__button"
+        [class.confirm__button--danger]="confirmDanger()"
+        [class.confirm__button--primary]="!confirmDanger()"
+        (click)="closed.emit(true)"
+      >
         {{ confirmLabel() }}
       </button>
     </div>

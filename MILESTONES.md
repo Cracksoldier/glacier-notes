@@ -105,10 +105,10 @@ Implementation plan derived from [SPECIFICATION.md](SPECIFICATION.md). Each mile
 
 **Goal:** Data portability and sharing.
 
-- [ ] Export to `.glacier.json` (schema version, notebooks, notes, labels, images base64) via save dialog; scope: all or single notebook (§5.7)
-- [ ] Import with validation; conflict dialog "add as copies" / "replace by ID", skipped when no collisions (§5.7)
-- [ ] Round-trip test: export → fresh install → import → identical data (§11.7)
-- [ ] Share via `mailto:` (subject = title, body = markdown/`- [x]` lines) through `shell.openExternal`; UI hint re: no image attachments + "export note as file" alternative (§5.8)
+- [x] Export to `.glacier.json` (schema version, notebooks, notes, labels, images base64) via save dialog; scope: all or single notebook (§5.7)
+- [x] Import with validation; conflict dialog "add as copies" / "replace by ID", skipped when no collisions (§5.7)
+- [x] Round-trip test: export → fresh install → import → identical data (§11.7)
+- [x] Share via `mailto:` (subject = title, body = markdown/`- [x]` lines) through `shell.openExternal`; UI hint re: no image attachments + "export note as file" alternative (§5.8)
 
 **Done when:** acceptance criteria 7 and 8 pass.
 
@@ -118,10 +118,10 @@ Implementation plan derived from [SPECIFICATION.md](SPECIFICATION.md). Each mile
 
 **Goal:** Power-user and desktop-integration features.
 
-- [ ] Shortcut set from §5.11 via menu accelerators + in-app handlers; shortcut help dialog (`Ctrl/Cmd+/`)
-- [ ] Tray icon + context menu (open / quick note / quit); close-to-tray setting (§5.12, §7)
-- [ ] Quick-note window on global shortcut (default `Ctrl/Cmd+Alt+G`, configurable); saves to default notebook (§5.12)
-- [ ] Graceful degradation on Linux/Wayland (hide/disable with settings hint) (§5.12)
+- [x] Shortcut set from §5.11 via menu accelerators + in-app handlers; shortcut help dialog (`Ctrl/Cmd+/`)
+- [x] Tray icon + context menu (open / quick note / quit); close-to-tray setting (§5.12, §7)
+- [x] Quick-note window on global shortcut (default `Ctrl/Cmd+Alt+G`, configurable); saves to default notebook (§5.12)
+- [x] Graceful degradation on Linux/Wayland (hide/disable with settings hint) (§5.12)
 
 **Done when:** acceptance criteria 14 and 15 pass.
 

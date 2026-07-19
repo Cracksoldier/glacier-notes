@@ -1,4 +1,22 @@
-import type { GlacierApi, ImageAsset, Label, Note, Notebook, Settings } from '../../../electron/api';
+import type {
+  AppCommand,
+  GlacierApi,
+  ImageAsset,
+  ImportInspectResult,
+  ImportStrategy,
+  Label,
+  Note,
+  Notebook,
+  Settings,
+} from '../../../electron/api';
+
+interface TransferStubState {
+  /** Result the next importInspect call resolves to; tests may replace it. */
+  inspectResult: ImportInspectResult;
+  exportCalls: unknown[];
+  appliedStrategies: ImportStrategy[];
+  importCanceled: boolean;
+}
 
 // In-memory fake of the preload bridge for renderer unit tests.
 export function installGlacierApiStub(): {
@@ -7,6 +25,16 @@ export function installGlacierApiStub(): {
   labels: Label[];
   images: ImageAsset[];
   settings: Settings;
+  transfer: TransferStubState;
+  sharedNoteIds: string[];
+  capabilities: { tray: boolean; globalShortcut: boolean; quickNoteShortcutRegistered: boolean };
+  quickNotes: string[];
+  quickNoteCanceled: boolean;
+  rejectNextSettingsSet: boolean;
+  /** Fire a main-process command as the menu/tray would. */
+  fireCommand: (command: AppCommand) => void;
+  /** Fire the cross-window notes-changed event. */
+  fireNotesChanged: () => void;
 } {
   const now = new Date().toISOString();
   const defaultNotebook: Notebook = {
@@ -30,7 +58,31 @@ export function installGlacierApiStub(): {
       trashAutoPurgeDays: 30,
       lastSelectedNotebookId: null,
     } as Settings,
+    transfer: {
+      inspectResult: {
+        status: 'ready',
+        hasConflicts: false,
+        counts: { notebooks: 0, notes: 0, labels: 0, images: 0 },
+      },
+      exportCalls: [],
+      appliedStrategies: [],
+      importCanceled: false,
+    } as TransferStubState,
+    sharedNoteIds: [] as string[],
+    capabilities: { tray: true, globalShortcut: true, quickNoteShortcutRegistered: true },
+    quickNotes: [] as string[],
+    quickNoteCanceled: false,
+    rejectNextSettingsSet: false,
+    fireCommand: (command: AppCommand) => {
+      for (const cb of commandCallbacks) cb(command);
+    },
+    fireNotesChanged: () => {
+      for (const cb of notesChangedCallbacks) cb();
+    },
   };
+
+  const commandCallbacks = new Set<(command: AppCommand) => void>();
+  const notesChangedCallbacks = new Set<() => void>();
 
   let nextId = 1;
   const newId = () => `id-${nextId++}`;
@@ -137,7 +189,9 @@ export function installGlacierApiStub(): {
         state.images = state.images.filter((i) => i.id !== id);
       },
       deleteIfUnreferenced: async (id) => {
-        const referenced = state.notes.some((n) => n.imageIds.includes(id) || n.content.includes(id));
+        const referenced = state.notes.some(
+          (n) => n.imageIds.includes(id) || n.content.includes(id),
+        );
         if (referenced || !state.images.some((i) => i.id === id)) return false;
         state.images = state.images.filter((i) => i.id !== id);
         return true;
@@ -145,10 +199,56 @@ export function installGlacierApiStub(): {
     },
     settings: {
       get: async () => ({ ...state.settings }),
-      set: async (patch) => Object.assign(state.settings, patch),
+      set: async (patch) => {
+        if (state.rejectNextSettingsSet) {
+          state.rejectNextSettingsSet = false;
+          throw new Error('Settings update rejected');
+        }
+        return Object.assign(state.settings, patch);
+      },
     },
     shell: {
       openExternal: async () => undefined,
+    },
+    transfer: {
+      exportData: async (scope) => {
+        state.transfer.exportCalls.push(scope);
+        return { status: 'saved' };
+      },
+      importInspect: async () => state.transfer.inspectResult,
+      importApply: async (strategy) => {
+        state.transfer.appliedStrategies.push(strategy);
+        return { status: 'done', counts: { notebooks: 0, notes: 0, labels: 0, images: 0 } };
+      },
+      importCancel: async () => {
+        state.transfer.importCanceled = true;
+      },
+    },
+    share: {
+      emailNote: async (noteId) => {
+        state.sharedNoteIds.push(noteId);
+      },
+    },
+    quickNote: {
+      save: async (content) => {
+        state.quickNotes.push(content);
+      },
+      cancel: async () => {
+        state.quickNoteCanceled = true;
+      },
+    },
+    system: {
+      getCapabilities: async () => ({ ...state.capabilities }),
+    },
+    events: {
+      onCommand: (callback) => {
+        commandCallbacks.add(callback);
+        return () => commandCallbacks.delete(callback);
+      },
+      onNotesChanged: (callback) => {
+        notesChangedCallbacks.add(callback);
+        return () => notesChangedCallbacks.delete(callback);
+      },
     },
   };
 

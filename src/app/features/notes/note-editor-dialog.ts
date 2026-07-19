@@ -18,6 +18,7 @@ import { NoteStore } from '../../core/store/note-store';
 import { SettingsStore } from '../../core/store/settings-store';
 import { UiStore } from '../../core/store/ui-store';
 import { Autofocus } from '../../shared/autofocus';
+import { ConfirmDialog } from '../../shared/confirm-dialog/confirm-dialog';
 import { GlacierImgPipe } from '../../shared/glacier-img.pipe';
 import { ChecklistEditor } from './checklist-editor';
 import { checklistToText, textToChecklist } from './checklist-model';
@@ -31,7 +32,15 @@ const SAVE_DEBOUNCE_MS = 500;
 
 @Component({
   selector: 'app-note-editor-dialog',
-  imports: [Autofocus, ChecklistEditor, ColorPickerMenu, GlacierImgPipe, LabelPickerMenu, MarkdownToolbar],
+  imports: [
+    Autofocus,
+    ChecklistEditor,
+    ColorPickerMenu,
+    ConfirmDialog,
+    GlacierImgPipe,
+    LabelPickerMenu,
+    MarkdownToolbar,
+  ],
   templateUrl: './note-editor-dialog.html',
   styleUrl: './note-editor-dialog.scss',
 })
@@ -51,6 +60,9 @@ export class NoteEditorDialog implements OnInit, AfterViewInit, OnDestroy {
   protected readonly previewMode = signal(false);
   protected readonly colorMenuOpen = signal(false);
   protected readonly labelMenuOpen = signal(false);
+  protected readonly shareConfirm = signal(false);
+  protected readonly shareMessage = signal('');
+  protected readonly shareConfirmLabel = signal('');
   protected readonly previewHtml = computed(() => this.markdown.render(this.content()));
   protected readonly isChecklist = computed(() => this.note().type === 'checklist');
   protected readonly colorVar = computed(() => noteColorVar(this.note().color));
@@ -106,12 +118,20 @@ export class NoteEditorDialog implements OnInit, AfterViewInit, OnDestroy {
       await this.flush();
       if (this.isChecklist()) {
         const content = checklistToText(this.items());
-        await this.noteStore.updateInPlace(this.note().id, { type: 'text', content, checklist: [] });
+        await this.noteStore.updateInPlace(this.note().id, {
+          type: 'text',
+          content,
+          checklist: [],
+        });
         this.content.set(content);
         this.items.set([]);
       } else {
         const items = textToChecklist(this.content());
-        await this.noteStore.updateInPlace(this.note().id, { type: 'checklist', content: '', checklist: items });
+        await this.noteStore.updateInPlace(this.note().id, {
+          type: 'checklist',
+          content: '',
+          checklist: items,
+        });
         this.items.set(items);
         this.content.set('');
         this.previewMode.set(false);
@@ -139,7 +159,9 @@ export class NoteEditorDialog implements OnInit, AfterViewInit, OnDestroy {
   }
 
   protected onDrop(event: DragEvent): void {
-    const files = [...(event.dataTransfer?.files ?? [])].filter((f) => this.upload.isSupported(f.type));
+    const files = [...(event.dataTransfer?.files ?? [])].filter((f) =>
+      this.upload.isSupported(f.type),
+    );
     if (files.length === 0) return;
     event.preventDefault();
     void this.addImages(files);
@@ -251,6 +273,67 @@ export class NoteEditorDialog implements OnInit, AfterViewInit, OnDestroy {
     event.stopPropagation();
     this.colorMenuOpen.set(false);
     this.labelMenuOpen.update((open) => !open);
+  }
+
+  protected share(): void {
+    const note = this.note();
+    const body =
+      note.type === 'checklist'
+        ? (note.checklist ?? [])
+            .map((item) => `- [${item.checked ? 'x' : ' '}] ${item.text}`)
+            .join('\n')
+        : this.content();
+    const mailtoLength =
+      `mailto:?subject=${encodeURIComponent(this.title())}&body=${encodeURIComponent(body)}`.length;
+    if (note.imageIds.length > 0 || mailtoLength > 2000) {
+      this.shareMessage.set(
+        note.imageIds.length > 0
+          ? this.i18n.t('share.imagesMessage')
+          : this.i18n.t('share.longMessage'),
+      );
+      this.shareConfirmLabel.set(
+        note.imageIds.length > 0
+          ? this.i18n.t('share.sendWithout')
+          : this.i18n.t('share.sendEmail'),
+      );
+      this.shareConfirm.set(true);
+    } else {
+      void this.emailNote();
+    }
+  }
+
+  protected async exportNote(): Promise<void> {
+    this.shareConfirm.set(false);
+    await this.flush();
+    await window.glacierApi.transfer.exportData({ kind: 'note', noteId: this.note().id });
+  }
+
+  protected onShareConfirmed(confirmed: boolean): void {
+    this.shareConfirm.set(false);
+    if (confirmed) {
+      void this.emailNote();
+    }
+  }
+
+  private async emailNote(): Promise<void> {
+    await this.flush();
+    await window.glacierApi.share.emailNote(this.note().id);
+  }
+
+  protected onDialogKeydown(event: KeyboardEvent): void {
+    if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
+      event.preventDefault();
+      void this.close();
+    }
+  }
+
+  protected onContentKeydown(event: KeyboardEvent): void {
+    if (!(event.ctrlKey || event.metaKey) || event.altKey || event.shiftKey) return;
+    const key = event.key.toLowerCase();
+    if (key === 'b' || key === 'i') {
+      event.preventDefault();
+      this.onToolbar(key === 'b' ? 'bold' : 'italic');
+    }
   }
 
   protected onCancel(event: Event): void {

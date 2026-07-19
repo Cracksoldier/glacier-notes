@@ -1,0 +1,159 @@
+<dialog #dialog class="transfer" (cancel)="onCancel($event)" (click)="onBackdropClick($event)">
+  <div class="transfer__body">
+    <div class="transfer__header">
+      <h3 class="transfer__title">{{ i18n.t('transfer.title') }}</h3>
+      <button
+        type="button"
+        class="transfer__close"
+        [attr.aria-label]="i18n.t('common.close')"
+        (click)="close()"
+      >
+        <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+      </button>
+    </div>
+
+    @switch (step().kind) {
+      @case ('menu') {
+        <section class="transfer__section">
+          <h4 class="transfer__heading">{{ i18n.t('transfer.exportHeading') }}</h4>
+          <label class="transfer__option">
+            <input
+              type="radio"
+              name="scope"
+              [checked]="scopeKind() === 'all'"
+              (change)="scopeKind.set('all')"
+            />
+            <span>{{ i18n.t('transfer.exportAll') }}</span>
+          </label>
+          <label class="transfer__option">
+            <input
+              type="radio"
+              name="scope"
+              [checked]="scopeKind() === 'notebook'"
+              (change)="scopeKind.set('notebook')"
+            />
+            <span>{{ i18n.t('transfer.exportNotebook') }}</span>
+            <select
+              class="transfer__select"
+              [disabled]="scopeKind() !== 'notebook'"
+              [value]="scopeNotebookId()"
+              (change)="onScopeNotebookChange($event)"
+            >
+              @for (notebook of notebooks(); track notebook.id) {
+                <option [value]="notebook.id">{{ notebook.name }}</option>
+              }
+            </select>
+          </label>
+          <div class="transfer__actions">
+            @if (exportSaved()) {
+              <span class="transfer__saved">
+                <i class="fa-solid fa-check" aria-hidden="true"></i>
+                {{ i18n.t('transfer.exportSaved') }}
+              </span>
+            }
+            <button
+              type="button"
+              class="transfer__button transfer__button--primary"
+              [disabled]="busy()"
+              (click)="runExport()"
+            >
+              <i class="fa-solid fa-file-export" aria-hidden="true"></i>
+              {{ i18n.t('transfer.export') }}
+            </button>
+          </div>
+        </section>
+
+        <section class="transfer__section">
+          <h4 class="transfer__heading">{{ i18n.t('transfer.importHeading') }}</h4>
+          <p class="transfer__hint">{{ i18n.t('transfer.importHint') }}</p>
+          <div class="transfer__actions">
+            <button
+              type="button"
+              class="transfer__button transfer__button--primary"
+              [disabled]="busy()"
+              (click)="runImport()"
+            >
+              <i class="fa-solid fa-file-import" aria-hidden="true"></i>
+              {{ i18n.t('transfer.import') }}
+            </button>
+          </div>
+        </section>
+      }
+      @case ('conflict') {
+        <section class="transfer__section">
+          <h4 class="transfer__heading">{{ i18n.t('transfer.conflictTitle') }}</h4>
+          <p class="transfer__hint">{{ i18n.t('transfer.conflictMessage') }}</p>
+          <button
+            type="button"
+            class="transfer__choice"
+            [disabled]="busy()"
+            (click)="resolveConflict('copy')"
+          >
+            <span class="transfer__choice-label">{{ i18n.t('transfer.addCopies') }}</span>
+            <span class="transfer__choice-hint">{{ i18n.t('transfer.addCopiesHint') }}</span>
+          </button>
+          <button
+            type="button"
+            class="transfer__choice"
+            [disabled]="busy()"
+            (click)="resolveConflict('replace')"
+          >
+            <span class="transfer__choice-label">{{ i18n.t('transfer.replaceById') }}</span>
+            <span class="transfer__choice-hint">{{ i18n.t('transfer.replaceByIdHint') }}</span>
+          </button>
+          <div class="transfer__actions">
+            <button
+              type="button"
+              class="transfer__button"
+              [disabled]="busy()"
+              (click)="cancelConflict()"
+            >
+              {{ i18n.t('common.cancel') }}
+            </button>
+          </div>
+        </section>
+      }
+      @case ('done') {
+        <section class="transfer__section">
+          <h4 class="transfer__heading">{{ i18n.t('transfer.doneTitle') }}</h4>
+          @if (doneCounts(); as counts) {
+            <p class="transfer__hint">
+              {{
+                i18n.t('transfer.doneMessage', {
+                  notebooks: counts.notebooks,
+                  notes: counts.notes,
+                  labels: counts.labels,
+                  images: counts.images,
+                })
+              }}
+            </p>
+          }
+          <div class="transfer__actions">
+            <button
+              type="button"
+              class="transfer__button transfer__button--primary"
+              (click)="close()"
+            >
+              {{ i18n.t('common.close') }}
+            </button>
+          </div>
+        </section>
+      }
+      @case ('error') {
+        <section class="transfer__section">
+          <h4 class="transfer__heading">{{ i18n.t('transfer.errorTitle') }}</h4>
+          <ul class="transfer__errors">
+            @for (error of errors(); track $index) {
+              <li>{{ error }}</li>
+            }
+          </ul>
+          <div class="transfer__actions">
+            <button type="button" class="transfer__button" (click)="step.set({ kind: 'menu' })">
+              {{ i18n.t('common.close') }}
+            </button>
+          </div>
+        </section>
+      }
+    }
+  </div>
+</dialog>

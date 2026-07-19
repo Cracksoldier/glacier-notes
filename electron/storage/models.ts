@@ -1,6 +1,13 @@
 // Data model per SPECIFICATION.md §3 and §7.
 
 export const SCHEMA_VERSION = 1;
+export const ENTITY_ID_PATTERN =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+export function requireEntityId(id: string): string {
+  if (!ENTITY_ID_PATTERN.test(id)) throw new Error(`Invalid entity id: ${id}`);
+  return id;
+}
 
 export interface Notebook {
   id: string;
@@ -57,7 +64,18 @@ export interface NoteCreateInput {
 }
 
 export type NoteUpdatePatch = Partial<
-  Pick<Note, 'type' | 'title' | 'content' | 'checklist' | 'pinned' | 'archived' | 'color' | 'labels' | 'imageIds'>
+  Pick<
+    Note,
+    | 'type'
+    | 'title'
+    | 'content'
+    | 'checklist'
+    | 'pinned'
+    | 'archived'
+    | 'color'
+    | 'labels'
+    | 'imageIds'
+  >
 >;
 
 export interface ImageAsset {

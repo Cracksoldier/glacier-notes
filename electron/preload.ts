@@ -1,5 +1,13 @@
-import { contextBridge, ipcRenderer } from 'electron';
-import type { GlacierApi, NoteCreateInput, NoteFilter, NoteUpdatePatch } from './api';
+import { contextBridge, ipcRenderer, IpcRendererEvent } from 'electron';
+import type {
+  AppCommand,
+  ExportScope,
+  GlacierApi,
+  ImportStrategy,
+  NoteCreateInput,
+  NoteFilter,
+  NoteUpdatePatch,
+} from './api';
 
 const api: GlacierApi = {
   ping: () => ipcRenderer.invoke('app:ping'),
@@ -39,6 +47,35 @@ const api: GlacierApi = {
   },
   shell: {
     openExternal: (url: string) => ipcRenderer.invoke('shell:openExternal', url),
+  },
+  transfer: {
+    exportData: (scope: ExportScope, filePath?: string) =>
+      ipcRenderer.invoke('transfer:exportData', scope, filePath),
+    importInspect: (filePath?: string) => ipcRenderer.invoke('transfer:importInspect', filePath),
+    importApply: (strategy: ImportStrategy) => ipcRenderer.invoke('transfer:importApply', strategy),
+    importCancel: () => ipcRenderer.invoke('transfer:importCancel'),
+  },
+  share: {
+    emailNote: (noteId: string) => ipcRenderer.invoke('share:emailNote', noteId),
+  },
+  quickNote: {
+    save: (content: string) => ipcRenderer.invoke('quickNote:save', content),
+    cancel: () => ipcRenderer.invoke('quickNote:cancel'),
+  },
+  system: {
+    getCapabilities: () => ipcRenderer.invoke('system:getCapabilities'),
+  },
+  events: {
+    onCommand: (callback: (command: AppCommand) => void) => {
+      const listener = (_e: IpcRendererEvent, command: AppCommand) => callback(command);
+      ipcRenderer.on('glacier:command', listener);
+      return () => ipcRenderer.removeListener('glacier:command', listener);
+    },
+    onNotesChanged: (callback: () => void) => {
+      const listener = () => callback();
+      ipcRenderer.on('glacier:notes-changed', listener);
+      return () => ipcRenderer.removeListener('glacier:notes-changed', listener);
+    },
   },
 };
 

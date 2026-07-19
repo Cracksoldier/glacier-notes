@@ -1,0 +1,27 @@
+<dialog #dialog class="shortcut-help" (cancel)="onCancel($event)" (click)="onBackdropClick($event)">
+  <div class="shortcut-help__body">
+    <div class="shortcut-help__header">
+      <h3 class="shortcut-help__title">{{ i18n.t('shortcuts.title') }}</h3>
+      <button
+        type="button"
+        class="shortcut-help__close"
+        [attr.aria-label]="i18n.t('common.close')"
+        (click)="closed.emit()"
+      >
+        <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+      </button>
+    </div>
+    <table class="shortcut-help__table">
+      <tbody>
+        @for (row of rows; track row.labelKey) {
+          <tr>
+            <td class="shortcut-help__combo">
+              <kbd>{{ row.combo }}</kbd>
+            </td>
+            <td class="shortcut-help__label">{{ i18n.t(row.labelKey) }}</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</dialog>

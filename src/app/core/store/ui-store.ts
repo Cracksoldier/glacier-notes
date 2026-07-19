@@ -16,6 +16,10 @@ export class UiStore {
   readonly editorNoteId = signal<string | null>(null);
   readonly lightboxImageId = signal<string | null>(null);
   readonly settingsOpen = signal(false);
+  readonly transferOpen = signal(false);
+  readonly shortcutHelpOpen = signal(false);
+  /** Bumped to request focus on the header search input. */
+  readonly focusSearchTick = signal(0);
 
   readonly searchQuery = signal('');
   readonly searchScope = signal<'all' | 'notebook'>('all');
@@ -62,7 +66,47 @@ export class UiStore {
     this.searchQuery.set('');
   }
 
+  openTransfer(): void {
+    this.settingsOpen.set(false);
+    this.shortcutHelpOpen.set(false);
+    this.transferOpen.set(true);
+  }
+
+  closeTransfer(): void {
+    this.transferOpen.set(false);
+  }
+
+  toggleTransfer(): void {
+    const opening = !this.transferOpen();
+    this.settingsOpen.set(false);
+    this.shortcutHelpOpen.set(false);
+    this.transferOpen.set(opening);
+  }
+
+  openShortcutHelp(): void {
+    this.settingsOpen.set(false);
+    this.transferOpen.set(false);
+    this.shortcutHelpOpen.set(true);
+  }
+
+  closeShortcutHelp(): void {
+    this.shortcutHelpOpen.set(false);
+  }
+
+  toggleShortcutHelp(): void {
+    const opening = !this.shortcutHelpOpen();
+    this.settingsOpen.set(false);
+    this.transferOpen.set(false);
+    this.shortcutHelpOpen.set(opening);
+  }
+
+  focusSearch(): void {
+    this.focusSearchTick.update((tick) => tick + 1);
+  }
+
   openSettings(): void {
+    this.transferOpen.set(false);
+    this.shortcutHelpOpen.set(false);
     this.settingsOpen.set(true);
   }
 
@@ -71,6 +115,9 @@ export class UiStore {
   }
 
   openEditor(noteId: string): void {
+    this.settingsOpen.set(false);
+    this.transferOpen.set(false);
+    this.shortcutHelpOpen.set(false);
     this.editorNoteId.set(noteId);
   }
 

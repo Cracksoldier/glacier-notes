@@ -131,6 +131,14 @@
       <button
         type="button"
         class="note-card__action"
+        [title]="i18n.t('share.email')"
+        (click)="share()"
+      >
+        <i class="fa-solid fa-envelope" aria-hidden="true"></i>
+      </button>
+      <button
+        type="button"
+        class="note-card__action"
         [title]="i18n.t('common.delete')"
         (click)="noteStore.trash(note().id)"
       >
@@ -139,6 +147,15 @@
     }
   </div>
 </article>
+
+@if (shareConfirm()) {
+  <app-confirm-dialog
+    [title]="i18n.t('share.imagesTitle')"
+    [message]="i18n.t('share.imagesMessage')"
+    [confirmLabel]="i18n.t('share.sendWithout')"
+    (closed)="onShareConfirmed($event)"
+  />
+}
 
 @if (purgeConfirm()) {
   <app-confirm-dialog

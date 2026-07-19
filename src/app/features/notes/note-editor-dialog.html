@@ -1,4 +1,10 @@
-<dialog #dialog class="editor" (cancel)="onCancel($event)" (click)="onBackdropClick($event)">
+<dialog
+  #dialog
+  class="editor"
+  (cancel)="onCancel($event)"
+  (click)="onBackdropClick($event)"
+  (keydown)="onDialogKeydown($event)"
+>
   <div
     class="editor__body"
     [style.background-color]="colorVar()"
@@ -22,7 +28,12 @@
         [value]="title()"
         (input)="onTitleInput($any($event.target).value)"
       />
-      <button type="button" class="editor__close" [title]="i18n.t('common.close')" (click)="close()">
+      <button
+        type="button"
+        class="editor__close"
+        [title]="i18n.t('common.close')"
+        (click)="close()"
+      >
         <i class="fa-solid fa-xmark" aria-hidden="true"></i>
       </button>
     </div>
@@ -39,7 +50,12 @@
               (click)="ui.openLightbox(id)"
               (keydown.enter)="ui.openLightbox(id)"
             />
-            <button type="button" class="editor__image-remove" [title]="i18n.t('editor.removeImage')" (click)="removeImage(id)">
+            <button
+              type="button"
+              class="editor__image-remove"
+              [title]="i18n.t('editor.removeImage')"
+              (click)="removeImage(id)"
+            >
               <i class="fa-solid fa-xmark" aria-hidden="true"></i>
             </button>
           </div>
@@ -65,13 +81,22 @@
           [title]="previewMode() ? i18n.t('editor.edit') : i18n.t('editor.preview')"
           (click)="previewMode.set(!previewMode())"
         >
-          <i class="fa-solid" [class.fa-eye]="!previewMode()" [class.fa-pen]="previewMode()" aria-hidden="true"></i>
+          <i
+            class="fa-solid"
+            [class.fa-eye]="!previewMode()"
+            [class.fa-pen]="previewMode()"
+            aria-hidden="true"
+          ></i>
           {{ previewMode() ? i18n.t('editor.edit') : i18n.t('editor.preview') }}
         </button>
       </div>
 
       @if (previewMode()) {
-        <div class="editor__preview markdown-body" [innerHTML]="previewHtml()" (click)="onPreviewClick($event)"></div>
+        <div
+          class="editor__preview markdown-body"
+          [innerHTML]="previewHtml()"
+          (click)="onPreviewClick($event)"
+        ></div>
       } @else {
         <textarea
           class="editor__content"
@@ -79,6 +104,7 @@
           [placeholder]="i18n.t('editor.contentPlaceholder')"
           [value]="content()"
           (input)="onContentInput($any($event.target).value)"
+          (keydown)="onContentKeydown($event)"
         ></textarea>
       }
     }
@@ -99,7 +125,12 @@
           {{ i18n.t('editor.addImage') }}
         </button>
         <span class="editor__menu-anchor">
-          <button type="button" class="editor__color" [title]="i18n.t('card.color')" (click)="toggleColorMenu($event)">
+          <button
+            type="button"
+            class="editor__color"
+            [title]="i18n.t('card.color')"
+            (click)="toggleColorMenu($event)"
+          >
             <i class="fa-solid fa-palette" aria-hidden="true"></i>
             {{ i18n.t('card.color') }}
           </button>
@@ -108,7 +139,12 @@
           }
         </span>
         <span class="editor__menu-anchor">
-          <button type="button" class="editor__color" [title]="i18n.t('editor.labels')" (click)="toggleLabelMenu($event)">
+          <button
+            type="button"
+            class="editor__color"
+            [title]="i18n.t('editor.labels')"
+            (click)="toggleLabelMenu($event)"
+          >
             <i class="fa-solid fa-tag" aria-hidden="true"></i>
             {{ i18n.t('editor.labels') }}
           </button>
@@ -116,6 +152,15 @@
             <app-label-picker-menu [note]="note()" (closed)="labelMenuOpen.set(false)" />
           }
         </span>
+        <button
+          type="button"
+          class="editor__color"
+          [title]="i18n.t('share.email')"
+          (click)="share()"
+        >
+          <i class="fa-solid fa-envelope" aria-hidden="true"></i>
+          {{ i18n.t('share.email') }}
+        </button>
         @if (isChecklist()) {
           <label class="editor__setting">
             <input
@@ -127,7 +172,21 @@
           </label>
         }
       </div>
-      <span class="editor__meta">{{ i18n.t('editor.edited', { date: i18n.formatDate(note().updatedAt) }) }}</span>
+      <span class="editor__meta">{{
+        i18n.t('editor.edited', { date: i18n.formatDate(note().updatedAt) })
+      }}</span>
     </div>
   </div>
 </dialog>
+
+@if (shareConfirm()) {
+  <app-confirm-dialog
+    [title]="i18n.t('share.imagesTitle')"
+    [message]="shareMessage()"
+    [confirmLabel]="shareConfirmLabel()"
+    [secondaryLabel]="i18n.t('share.exportNote')"
+    [confirmDanger]="false"
+    (secondary)="exportNote()"
+    (closed)="onShareConfirmed($event)"
+  />
+}

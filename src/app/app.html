@@ -31,3 +31,11 @@
 @if (ui.settingsOpen()) {
   <app-settings-dialog (closed)="ui.closeSettings()" />
 }
+
+@if (ui.transferOpen()) {
+  <app-transfer-dialog (closed)="ui.closeTransfer()" />
+}
+
+@if (ui.shortcutHelpOpen()) {
+  <app-shortcut-help-dialog (closed)="ui.closeShortcutHelp()" />
+}

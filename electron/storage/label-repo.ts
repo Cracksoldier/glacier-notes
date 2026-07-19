@@ -39,6 +39,17 @@ export class LabelRepo {
     return label;
   }
 
+  /** Upsert with a caller-provided id (import path). */
+  insert(label: Label): void {
+    const index = this.labels.findIndex((l) => l.id === label.id);
+    if (index === -1) {
+      this.labels.push(label);
+    } else {
+      this.labels[index] = label;
+    }
+    this.persist();
+  }
+
   update(id: string, patch: Partial<Pick<Label, 'name'>>): Label {
     const label = this.labels.find((l) => l.id === id);
     if (!label) {
@@ -60,6 +71,9 @@ export class LabelRepo {
   }
 
   private persist(): void {
-    this.writer.schedule(this.file, () => ({ schemaVersion: SCHEMA_VERSION, labels: this.labels }) satisfies LabelsFile);
+    this.writer.schedule(
+      this.file,
+      () => ({ schemaVersion: SCHEMA_VERSION, labels: this.labels }) satisfies LabelsFile,
+    );
   }
 }

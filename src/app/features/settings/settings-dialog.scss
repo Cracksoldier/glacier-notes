@@ -85,3 +85,36 @@
   font-size: 12px;
   color: var(--color-text-muted);
 }
+
+.settings__hint--warning {
+  color: var(--color-danger, #d46a6a);
+}
+
+.settings__shortcut-row {
+  display: flex;
+  gap: 8px;
+}
+
+.settings__shortcut,
+.settings__reset {
+  padding: 8px 10px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: var(--color-surface-elevated);
+  color: var(--color-text);
+  cursor: pointer;
+
+  &:disabled {
+    cursor: default;
+    opacity: 0.5;
+  }
+}
+
+.settings__shortcut {
+  flex: 1;
+  text-align: left;
+}
+
+.settings__shortcut--recording {
+  border-color: var(--color-accent);
+}

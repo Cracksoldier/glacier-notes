@@ -45,3 +45,9 @@
     background-color: var(--color-danger-hover);
   }
 }
+
+.confirm__button--primary {
+  border-color: transparent;
+  background-color: var(--color-accent);
+  color: var(--color-bg);
+}

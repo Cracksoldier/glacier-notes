@@ -19,7 +19,10 @@ export class ConfirmDialog implements AfterViewInit, OnDestroy {
   readonly title = input.required<string>();
   readonly message = input('');
   readonly confirmLabel = input('Delete');
+  readonly secondaryLabel = input('');
+  readonly confirmDanger = input(true);
   readonly closed = output<boolean>();
+  readonly secondary = output<void>();
 
   protected readonly i18n = inject(I18nService);
 

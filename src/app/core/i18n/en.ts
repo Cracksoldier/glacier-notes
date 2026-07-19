@@ -11,6 +11,7 @@ export const en = {
   'header.switchToLight': 'Switch to light theme',
   'header.switchToDark': 'Switch to dark theme',
   'header.settings': 'Settings',
+  'header.shortcuts': 'Keyboard shortcuts',
 
   'toolbar.textNote': 'Text note',
   'toolbar.checklist': 'Checklist',
@@ -120,8 +121,66 @@ export const en = {
   'settings.themeLight': 'Light',
   'settings.language': 'Language',
   'settings.moveChecked': 'Move checked items to bottom',
+  'settings.closeToTray': 'Close the main window to the system tray',
+  'settings.trayUnavailable': 'The system tray is unavailable in this desktop environment.',
+  'settings.quickNoteShortcut': 'Quick-note shortcut',
+  'settings.pressShortcut': 'Press a shortcut…',
+  'settings.resetShortcut': 'Reset',
+  'settings.shortcutHint': 'Click the shortcut, then press the new key combination.',
+  'settings.shortcutUnavailable':
+    'Global shortcuts are unavailable in this session (common with some Wayland compositors).',
+  'settings.shortcutConflict':
+    'That shortcut could not be registered. The previous shortcut is still active.',
+  'settings.shortcutNotRegistered': 'The configured shortcut is not currently registered.',
   'settings.purgeDays': 'Auto-delete trash after (days)',
   'settings.purgeHint': '0 = never',
+
+  'transfer.title': 'Import / Export',
+  'transfer.exportHeading': 'Export',
+  'transfer.exportAll': 'Everything',
+  'transfer.exportNotebook': 'Single notebook:',
+  'transfer.export': 'Export…',
+  'transfer.exportSaved': 'Export saved.',
+  'transfer.importHeading': 'Import',
+  'transfer.importHint':
+    'Select a .glacier.json file. If items already exist, you can choose how to import them.',
+  'transfer.import': 'Import…',
+  'transfer.conflictTitle': 'Import conflicts',
+  'transfer.conflictMessage':
+    'Some items in this file already exist (same ID). How should they be imported?',
+  'transfer.addCopies': 'Add as copies',
+  'transfer.addCopiesHint': 'All imported items get new IDs. Nothing is overwritten.',
+  'transfer.replaceById': 'Replace existing',
+  'transfer.replaceByIdHint': 'Items with matching IDs are overwritten (backup restore).',
+  'transfer.doneTitle': 'Import complete',
+  'transfer.doneMessage':
+    'Imported: {notebooks} notebooks, {notes} notes, {labels} labels, {images} images.',
+  'transfer.errorTitle': 'Operation failed',
+  'transfer.unknownError': 'The operation failed.',
+
+  'shortcuts.title': 'Keyboard shortcuts',
+  'shortcuts.newTextNote': 'New text note',
+  'shortcuts.newChecklist': 'New checklist note',
+  'shortcuts.focusSearch': 'Focus search',
+  'shortcuts.closeEditor': 'Save & close editor',
+  'shortcuts.escape': 'Close editor/dialog',
+  'shortcuts.boldItalic': 'Bold / italic in editor',
+  'shortcuts.transfer': 'Import / export dialog',
+  'shortcuts.settings': 'Open settings',
+  'shortcuts.help': 'This help dialog',
+
+  'share.email': 'Share via email',
+  'share.imagesTitle': 'Note contains images',
+  'share.imagesMessage':
+    'Images cannot be attached to email. Export this note to include its images, or continue without them.',
+  'share.longMessage':
+    'This note may exceed your mail client’s link limit and could be truncated. Export it for reliable sharing.',
+  'share.sendWithout': 'Email without images',
+  'share.sendEmail': 'Continue to email',
+  'share.exportNote': 'Export note as file',
+
+  'quickNote.placeholder': 'Write a quick note…',
+  'quickNote.save': 'Save note',
 } as const;
 
 export type TranslationKey = keyof typeof en;

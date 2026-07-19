@@ -43,6 +43,14 @@
     <button
       type="button"
       class="icon-button"
+      [attr.aria-label]="i18n.t('header.shortcuts')"
+      (click)="ui.toggleShortcutHelp()"
+    >
+      <i class="fa-solid fa-circle-question" aria-hidden="true"></i>
+    </button>
+    <button
+      type="button"
+      class="icon-button"
       [attr.aria-label]="i18n.t('header.settings')"
       (click)="ui.openSettings()"
     >

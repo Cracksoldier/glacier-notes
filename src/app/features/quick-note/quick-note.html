@@ -1,0 +1,23 @@
+<div class="quick-note">
+  <textarea
+    #input
+    class="quick-note__input"
+    appAutofocus
+    [placeholder]="i18n.t('quickNote.placeholder')"
+    (keydown)="onKeydown($event, input.value)"
+  ></textarea>
+  <div class="quick-note__actions">
+    <button type="button" class="quick-note__button" (click)="cancel()">
+      {{ i18n.t('common.cancel') }}
+    </button>
+    <button
+      type="button"
+      class="quick-note__button quick-note__button--primary"
+      [disabled]="saving()"
+      (click)="save(input.value)"
+    >
+      <i class="fa-solid fa-check" aria-hidden="true"></i>
+      {{ i18n.t('quickNote.save') }}
+    </button>
+  </div>
+</div>

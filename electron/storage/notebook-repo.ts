@@ -15,7 +15,10 @@ export class NotebookRepo {
   private notebooks: Notebook[] = [];
   private defaultNotebookId = '';
 
-  constructor(baseDir: string, private readonly writer: DebouncedWriter) {
+  constructor(
+    baseDir: string,
+    private readonly writer: DebouncedWriter,
+  ) {
     this.file = path.join(baseDir, 'notebooks.json');
   }
 
@@ -65,6 +68,29 @@ export class NotebookRepo {
     this.notebooks.push(notebook);
     this.persist();
     return notebook;
+  }
+
+  /** Upsert with a caller-provided id (import path); never touches defaultNotebookId. */
+  insert(notebook: Notebook): void {
+    const index = this.notebooks.findIndex((n) => n.id === notebook.id);
+    if (index === -1) {
+      this.notebooks.push(notebook);
+    } else {
+      this.notebooks[index] = notebook;
+    }
+    this.persist();
+  }
+
+  replaceAll(notebooks: Notebook[], defaultNotebookId: string): void {
+    if (
+      notebooks.length === 0 ||
+      !notebooks.some((notebook) => notebook.id === defaultNotebookId)
+    ) {
+      throw new Error('Invalid notebook replacement');
+    }
+    this.notebooks = notebooks.map((notebook) => ({ ...notebook }));
+    this.defaultNotebookId = defaultNotebookId;
+    this.persist();
   }
 
   update(id: string, patch: Partial<Pick<Notebook, 'name' | 'color' | 'sortOrder'>>): Notebook {

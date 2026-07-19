@@ -1,7 +1,20 @@
-import { app, BrowserWindow, protocol, session } from 'electron';
+import { app, BrowserWindow, globalShortcut, ipcMain, protocol, session } from 'electron';
 import * as fs from 'fs';
 import * as path from 'path';
+import { AppCommand } from './api';
+import { registerTransferIpc } from './export-import';
+import { recoverImportTransaction } from './import-transaction';
 import { gcImages, registerIpc } from './ipc';
+import { registerShareIpc } from './mailto';
+import { installAppMenu } from './menu';
+import {
+  isQuickNoteShortcutRegistered,
+  openQuickNoteWindow,
+  registerQuickNoteIpc,
+  registerQuickNoteShortcut,
+  setQuickNoteLanguage,
+} from './quick-note';
+import { setupTray, updateTrayLanguage } from './tray';
 import { ImageStore } from './storage/image-store';
 import { DebouncedWriter } from './storage/json-store';
 import { LabelRepo } from './storage/label-repo';
@@ -15,7 +28,9 @@ const DEV_URL = 'http://localhost:4200';
 
 const IMAGE_ID_PATTERN = /^[0-9a-f-]{36}$/;
 
-protocol.registerSchemesAsPrivileged([{ scheme: 'glacier-img', privileges: { secure: true, stream: true } }]);
+protocol.registerSchemesAsPrivileged([
+  { scheme: 'glacier-img', privileges: { secure: true, stream: true } },
+]);
 
 function registerImageProtocol(images: ImageStore): void {
   protocol.handle('glacier-img', async (request) => {
@@ -60,6 +75,30 @@ function installCsp(): void {
   });
 }
 
+let mainWin: BrowserWindow | null = null;
+let isQuitting = false;
+let trayAvailable = false;
+let settingsRef: SettingsStore | null = null;
+let globalShortcutAvailable = true;
+
+function refreshDesktopLanguage(language: 'en' | 'de'): void {
+  installAppMenu(
+    (command: AppCommand) => mainWin?.webContents.send('glacier:command', command),
+    language,
+  );
+  updateTrayLanguage(language);
+  setQuickNoteLanguage(language);
+}
+
+function showMainWindow(): void {
+  if (mainWin) {
+    mainWin.show();
+    mainWin.focus();
+  } else {
+    createMainWindow();
+  }
+}
+
 function createMainWindow(): void {
   const windowState = createWindowState({ width: 1200, height: 800 });
 
@@ -70,12 +109,30 @@ function createMainWindow(): void {
     show: false,
     backgroundColor: '#0d1b2a',
     title: 'Glacier Notes',
+    autoHideMenuBar: true,
     webPreferences: {
       contextIsolation: true,
       nodeIntegration: false,
       sandbox: true,
       preload: path.join(__dirname, 'preload.js'),
     },
+  });
+
+  mainWin = win;
+  win.on('closed', () => {
+    if (mainWin === win) {
+      mainWin = null;
+    }
+  });
+  // Close-to-tray (§5.12): reads the setting live, so toggling it needs no rewiring.
+  win.on('close', (event) => {
+    if (!isQuitting && trayAvailable && settingsRef?.get().closeToTray) {
+      event.preventDefault();
+      win.hide();
+    } else if (!isQuitting) {
+      isQuitting = true;
+      app.quit();
+    }
   });
 
   windowState.manage(win);
@@ -118,12 +175,17 @@ function createMainWindow(): void {
           );
           const probeFile = process.env['GLACIER_SMOKE_PROBE'];
           if (probeFile) {
-            const cssProbe = await win.webContents.executeJavaScript(fs.readFileSync(probeFile, 'utf-8'));
+            const cssProbe = await win.webContents.executeJavaScript(
+              fs.readFileSync(probeFile, 'utf-8'),
+            );
             console.log('[smoke:probe]', JSON.stringify(cssProbe));
           }
           const image = await win.webContents.capturePage();
           fs.writeFileSync(path.join(app.getPath('temp'), 'glacier-smoke.png'), image.toPNG());
-          console.log('[smoke]', JSON.stringify({ ping, requireType, title, bodyClass, fonts, iconProbe }));
+          console.log(
+            '[smoke]',
+            JSON.stringify({ ping, requireType, title, bodyClass, fonts, iconProbe }),
+          );
         } catch (err) {
           console.error('[smoke] failed:', err);
           process.exitCode = 1;
@@ -145,6 +207,7 @@ app.whenReady().then(() => {
   installCsp();
 
   const baseDir = app.getPath('userData');
+  recoverImportTransaction(baseDir);
   const writer = new DebouncedWriter();
   const notebooks = new NotebookRepo(baseDir, writer);
   const notes = new NoteRepo(baseDir, writer);
@@ -158,16 +221,67 @@ app.whenReady().then(() => {
   settings.init();
   gcImages({ notes, images }, notes.purgeExpired(settings.get().trashAutoPurgeDays));
   registerImageProtocol(images);
-  registerIpc({ notebooks, notes, labels, images, settings });
-  app.on('before-quit', () => writer.flush());
+  const repos = { notebooks, notes, labels, images, settings };
+  settingsRef = settings;
+  const isSmoke = process.env['GLACIER_SMOKE'] === '1';
+  // Heuristic: globalShortcut.register silently fails on most Wayland compositors.
+  globalShortcutAvailable =
+    process.platform !== 'linux' || process.env['XDG_SESSION_TYPE'] !== 'wayland';
+
+  registerIpc(repos, {
+    setSettings: (prev, patch, commit) => {
+      const nextShortcut = patch.quickNoteShortcut;
+      const changesShortcut = nextShortcut !== undefined && nextShortcut !== prev.quickNoteShortcut;
+      if (changesShortcut && globalShortcutAvailable && !isSmoke) {
+        if (!registerQuickNoteShortcut(nextShortcut)) {
+          registerQuickNoteShortcut(prev.quickNoteShortcut);
+          throw new Error('Unable to register quick-note shortcut');
+        }
+      }
+      try {
+        const next = commit();
+        if (prev.language !== next.language) refreshDesktopLanguage(next.language);
+        return next;
+      } catch (error) {
+        if (changesShortcut && globalShortcutAvailable && !isSmoke) {
+          registerQuickNoteShortcut(prev.quickNoteShortcut);
+        }
+        throw error;
+      }
+    },
+  });
+  registerTransferIpc(repos, writer, () => mainWin, baseDir);
+  registerShareIpc(repos);
+  registerQuickNoteIpc(repos, () => mainWin);
+  ipcMain.handle('system:getCapabilities', () => ({
+    tray: trayAvailable,
+    globalShortcut: globalShortcutAvailable,
+    quickNoteShortcutRegistered: isQuickNoteShortcutRegistered(),
+  }));
+  refreshDesktopLanguage(settings.get().language);
+
+  // Tray and global shortcuts touch the desktop environment — skip them in headless smoke runs.
+  if (!isSmoke) {
+    trayAvailable = setupTray(
+      {
+        onOpen: () => showMainWindow(),
+        onQuickNote: () => openQuickNoteWindow(),
+        onQuit: () => app.quit(),
+      },
+      settings.get().language,
+    ).available;
+    if (globalShortcutAvailable) registerQuickNoteShortcut(settings.get().quickNoteShortcut);
+  }
+
+  app.on('before-quit', () => {
+    isQuitting = true;
+    writer.flush();
+  });
+  app.on('will-quit', () => globalShortcut.unregisterAll());
 
   createMainWindow();
 
-  app.on('activate', () => {
-    if (BrowserWindow.getAllWindows().length === 0) {
-      createMainWindow();
-    }
-  });
+  app.on('activate', () => showMainWindow());
 });
 
 app.on('window-all-closed', () => {

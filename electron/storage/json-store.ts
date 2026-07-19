@@ -53,4 +53,9 @@ export class DebouncedWriter {
     }
     this.pending.clear();
   }
+
+  discard(): void {
+    for (const { timer } of this.pending.values()) clearTimeout(timer);
+    this.pending.clear();
+  }
 }

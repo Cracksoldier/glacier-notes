@@ -13,6 +13,7 @@ export const de: Record<TranslationKey, string> = {
   'header.switchToLight': 'Zum hellen Design wechseln',
   'header.switchToDark': 'Zum dunklen Design wechseln',
   'header.settings': 'Einstellungen',
+  'header.shortcuts': 'Tastenkürzel',
 
   'toolbar.textNote': 'Textnotiz',
   'toolbar.checklist': 'Checkliste',
@@ -124,6 +125,67 @@ export const de: Record<TranslationKey, string> = {
   'settings.themeLight': 'Hell',
   'settings.language': 'Sprache',
   'settings.moveChecked': 'Erledigte Einträge nach unten verschieben',
+  'settings.closeToTray': 'Hauptfenster in den Infobereich schließen',
+  'settings.trayUnavailable': 'Der Infobereich ist in dieser Desktop-Umgebung nicht verfügbar.',
+  'settings.quickNoteShortcut': 'Tastenkürzel für Schnellnotiz',
+  'settings.pressShortcut': 'Tastenkürzel drücken…',
+  'settings.resetShortcut': 'Zurücksetzen',
+  'settings.shortcutHint':
+    'Auf das Tastenkürzel klicken und dann die neue Tastenkombination drücken.',
+  'settings.shortcutUnavailable':
+    'Globale Tastenkürzel sind in dieser Sitzung nicht verfügbar (häufig bei manchen Wayland-Compositors).',
+  'settings.shortcutConflict':
+    'Dieses Tastenkürzel konnte nicht registriert werden. Das bisherige bleibt aktiv.',
+  'settings.shortcutNotRegistered': 'Das konfigurierte Tastenkürzel ist derzeit nicht registriert.',
   'settings.purgeDays': 'Papierkorb automatisch leeren nach (Tagen)',
   'settings.purgeHint': '0 = nie',
+
+  'transfer.title': 'Import / Export',
+  'transfer.exportHeading': 'Export',
+  'transfer.exportAll': 'Alles',
+  'transfer.exportNotebook': 'Einzelnes Notizbuch:',
+  'transfer.export': 'Exportieren…',
+  'transfer.exportSaved': 'Export gespeichert.',
+  'transfer.importHeading': 'Import',
+  'transfer.importHint':
+    'Eine .glacier.json-Datei auswählen. Falls Einträge bereits existieren, kann gewählt werden, wie sie importiert werden.',
+  'transfer.import': 'Importieren…',
+  'transfer.conflictTitle': 'Importkonflikte',
+  'transfer.conflictMessage':
+    'Einige Einträge in dieser Datei existieren bereits (gleiche ID). Wie sollen sie importiert werden?',
+  'transfer.addCopies': 'Als Kopien hinzufügen',
+  'transfer.addCopiesHint':
+    'Alle importierten Einträge erhalten neue IDs. Nichts wird überschrieben.',
+  'transfer.replaceById': 'Vorhandene ersetzen',
+  'transfer.replaceByIdHint':
+    'Einträge mit gleicher ID werden überschrieben (Backup wiederherstellen).',
+  'transfer.doneTitle': 'Import abgeschlossen',
+  'transfer.doneMessage':
+    'Importiert: {notebooks} Notizbücher, {notes} Notizen, {labels} Labels, {images} Bilder.',
+  'transfer.errorTitle': 'Vorgang fehlgeschlagen',
+  'transfer.unknownError': 'Der Vorgang ist fehlgeschlagen.',
+
+  'shortcuts.title': 'Tastenkürzel',
+  'shortcuts.newTextNote': 'Neue Textnotiz',
+  'shortcuts.newChecklist': 'Neue Checkliste',
+  'shortcuts.focusSearch': 'Suche fokussieren',
+  'shortcuts.closeEditor': 'Editor speichern & schließen',
+  'shortcuts.escape': 'Editor/Dialog schließen',
+  'shortcuts.boldItalic': 'Fett / kursiv im Editor',
+  'shortcuts.transfer': 'Import-/Export-Dialog',
+  'shortcuts.settings': 'Einstellungen öffnen',
+  'shortcuts.help': 'Diese Hilfe',
+
+  'share.email': 'Per E-Mail teilen',
+  'share.imagesTitle': 'Notiz enthält Bilder',
+  'share.imagesMessage':
+    'Bilder können nicht an E-Mails angehängt werden. Diese Notiz exportieren, um ihre Bilder einzuschließen, oder ohne sie fortfahren.',
+  'share.longMessage':
+    'Diese Notiz überschreitet möglicherweise das Link-Limit des E-Mail-Programms und könnte gekürzt werden. Für zuverlässiges Teilen exportieren.',
+  'share.sendWithout': 'Ohne Bilder senden',
+  'share.sendEmail': 'Weiter zur E-Mail',
+  'share.exportNote': 'Notiz als Datei exportieren',
+
+  'quickNote.placeholder': 'Schnellnotiz schreiben…',
+  'quickNote.save': 'Notiz speichern',
 };

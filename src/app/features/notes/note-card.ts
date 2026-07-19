@@ -36,6 +36,7 @@ export class NoteCard {
   protected readonly moveMenuOpen = signal(false);
   protected readonly colorMenuOpen = signal(false);
   protected readonly purgeConfirm = signal(false);
+  protected readonly shareConfirm = signal(false);
 
   protected readonly trashed = computed(() => Boolean(this.note().deletedAt));
   protected readonly colorVar = computed(() => noteColorVar(this.note().color));
@@ -106,6 +107,21 @@ export class NoteCard {
     event.stopPropagation();
     this.moveMenuOpen.set(false);
     this.colorMenuOpen.update((open) => !open);
+  }
+
+  protected share(): void {
+    if (this.note().imageIds.length > 0) {
+      this.shareConfirm.set(true);
+    } else {
+      void window.glacierApi.share.emailNote(this.note().id);
+    }
+  }
+
+  protected onShareConfirmed(confirmed: boolean): void {
+    this.shareConfirm.set(false);
+    if (confirmed) {
+      void window.glacierApi.share.emailNote(this.note().id);
+    }
   }
 
   protected async onPurgeConfirmed(confirmed: boolean): Promise<void> {

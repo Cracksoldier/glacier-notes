@@ -1,7 +1,16 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { DebouncedWriter, readJsonFile } from './json-store';
-import { newId, Note, NoteCreateInput, NoteFilter, NoteUpdatePatch, nowIso, SCHEMA_VERSION } from './models';
+import {
+  newId,
+  Note,
+  NoteCreateInput,
+  NoteFilter,
+  NoteUpdatePatch,
+  nowIso,
+  requireEntityId,
+  SCHEMA_VERSION,
+} from './models';
 
 type StoredNote = Note & { schemaVersion: number };
 
@@ -9,11 +18,15 @@ export class NoteRepo {
   private readonly dir: string;
   private readonly notes = new Map<string, Note>();
 
-  constructor(baseDir: string, private readonly writer: DebouncedWriter) {
+  constructor(
+    baseDir: string,
+    private readonly writer: DebouncedWriter,
+  ) {
     this.dir = path.join(baseDir, 'notes');
   }
 
   init(): void {
+    this.notes.clear();
     fs.mkdirSync(this.dir, { recursive: true });
     for (const entry of fs.readdirSync(this.dir)) {
       if (!entry.endsWith('.json')) continue;
@@ -64,6 +77,13 @@ export class NoteRepo {
     this.notes.set(note.id, note);
     this.persist(note);
     return note;
+  }
+
+  /** Upsert with a caller-provided id (import path). */
+  insert(note: Note): void {
+    requireEntityId(note.id);
+    this.notes.set(note.id, note);
+    this.persist(note);
   }
 
   update(id: string, patch: NoteUpdatePatch): Note {
@@ -147,10 +167,14 @@ export class NoteRepo {
   }
 
   private noteFile(id: string): string {
+    requireEntityId(id);
     return path.join(this.dir, `${id}.json`);
   }
 
   private persist(note: Note): void {
-    this.writer.schedule(this.noteFile(note.id), () => ({ schemaVersion: SCHEMA_VERSION, ...note }));
+    this.writer.schedule(this.noteFile(note.id), () => ({
+      schemaVersion: SCHEMA_VERSION,
+      ...note,
+    }));
   }
 }

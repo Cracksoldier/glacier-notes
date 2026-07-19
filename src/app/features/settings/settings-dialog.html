@@ -2,7 +2,12 @@
   <div class="settings__body">
     <div class="settings__header">
       <h3 class="settings__title">{{ i18n.t('settings.title') }}</h3>
-      <button type="button" class="settings__close" [attr.aria-label]="i18n.t('common.close')" (click)="closed.emit()">
+      <button
+        type="button"
+        class="settings__close"
+        [attr.aria-label]="i18n.t('common.close')"
+        (click)="closed.emit()"
+      >
         <i class="fa-solid fa-xmark" aria-hidden="true"></i>
       </button>
     </div>
@@ -21,7 +26,9 @@
     </div>
 
     <div class="settings__field">
-      <label class="settings__label" for="settings-language">{{ i18n.t('settings.language') }}</label>
+      <label class="settings__label" for="settings-language">{{
+        i18n.t('settings.language')
+      }}</label>
       <select
         id="settings-language"
         class="settings__select"
@@ -40,11 +47,70 @@
         [checked]="settings.moveCheckedToBottom()"
         (change)="settings.setMoveCheckedToBottom($any($event.target).checked)"
       />
-      <label class="settings__label" for="settings-move-checked">{{ i18n.t('settings.moveChecked') }}</label>
+      <label class="settings__label" for="settings-move-checked">{{
+        i18n.t('settings.moveChecked')
+      }}</label>
+    </div>
+
+    <div class="settings__field settings__field--row">
+      <input
+        id="settings-close-to-tray"
+        type="checkbox"
+        [checked]="settings.closeToTray()"
+        [disabled]="!settings.capabilities().tray"
+        (change)="settings.setCloseToTray($any($event.target).checked)"
+      />
+      <label class="settings__label" for="settings-close-to-tray">{{
+        i18n.t('settings.closeToTray')
+      }}</label>
+    </div>
+    @if (!settings.capabilities().tray) {
+      <p class="settings__hint settings__hint--warning">{{ i18n.t('settings.trayUnavailable') }}</p>
+    }
+
+    <div class="settings__field">
+      <span class="settings__label">{{ i18n.t('settings.quickNoteShortcut') }}</span>
+      <div class="settings__shortcut-row">
+        <button
+          type="button"
+          class="settings__shortcut"
+          [class.settings__shortcut--recording]="recordingShortcut()"
+          [disabled]="!settings.capabilities().globalShortcut"
+          (click)="recordingShortcut.set(true)"
+          (keydown)="recordShortcut($event)"
+        >
+          {{ recordingShortcut() ? i18n.t('settings.pressShortcut') : displayShortcut() }}
+        </button>
+        <button
+          type="button"
+          class="settings__reset"
+          [disabled]="!settings.capabilities().globalShortcut"
+          (click)="resetShortcut()"
+        >
+          {{ i18n.t('settings.resetShortcut') }}
+        </button>
+      </div>
+      @if (!settings.capabilities().globalShortcut) {
+        <p class="settings__hint settings__hint--warning">
+          {{ i18n.t('settings.shortcutUnavailable') }}
+        </p>
+      } @else if (settings.shortcutError()) {
+        <p class="settings__hint settings__hint--warning">
+          {{ i18n.t('settings.shortcutConflict') }}
+        </p>
+      } @else if (!settings.capabilities().quickNoteShortcutRegistered) {
+        <p class="settings__hint settings__hint--warning">
+          {{ i18n.t('settings.shortcutNotRegistered') }}
+        </p>
+      } @else {
+        <p class="settings__hint">{{ i18n.t('settings.shortcutHint') }}</p>
+      }
     </div>
 
     <div class="settings__field">
-      <label class="settings__label" for="settings-purge-days">{{ i18n.t('settings.purgeDays') }}</label>
+      <label class="settings__label" for="settings-purge-days">{{
+        i18n.t('settings.purgeDays')
+      }}</label>
       <input
         id="settings-purge-days"
         class="settings__number"

@@ -57,3 +57,17 @@ Angular CLI does not come with an end-to-end testing framework by default. You c
 ## Additional Resources
 
 For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+
+## Backup format
+
+Glacier Notes exports portable `.glacier.json` files. The stable schema-v1 envelope contains
+`format`, `schemaVersion`, `exportedAt`, `notebooks`, `notes`, `labels`, and base64-encoded
+`images`. New exports also include `scope` (`all`, `notebook`, or `note`) and include
+`defaultNotebookId` for full backups. These two fields are optional so exports created by
+earlier v1 builds remain importable.
+
+Imports validate every entity and reference before changing local data. When IDs collide,
+choose **Add as copies** to remap all IDs safely or **Replace existing** to overwrite matching
+IDs. Collision-free imports preserve their original IDs. Importing a full backup into a
+pristine installation restores the exported default notebook and removes the generated empty
+one. Interrupted imports are rolled back automatically the next time the app starts.

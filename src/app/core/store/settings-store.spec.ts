@@ -15,6 +15,8 @@ describe('SettingsStore', () => {
     state.settings.theme = 'light';
     state.settings.language = 'de';
     state.settings.moveCheckedToBottom = true;
+    state.settings.closeToTray = false;
+    state.settings.quickNoteShortcut = 'CommandOrControl+Alt+K';
     state.settings.trashAutoPurgeDays = 7;
 
     await store.init();
@@ -22,6 +24,8 @@ describe('SettingsStore', () => {
     expect(store.theme()).toBe('light');
     expect(store.language()).toBe('de');
     expect(store.moveCheckedToBottom()).toBe(true);
+    expect(store.closeToTray()).toBe(false);
+    expect(store.quickNoteShortcut()).toBe('CommandOrControl+Alt+K');
     expect(store.trashAutoPurgeDays()).toBe(7);
   });
 
@@ -41,5 +45,23 @@ describe('SettingsStore', () => {
     await store.setTrashAutoPurgeDays(0);
     expect(store.trashAutoPurgeDays()).toBe(0);
     expect(state.settings.trashAutoPurgeDays).toBe(0);
+  });
+
+  it('persists desktop integration settings', async () => {
+    await store.setCloseToTray(false);
+    expect(state.settings.closeToTray).toBe(false);
+
+    expect(await store.setQuickNoteShortcut('CommandOrControl+Alt+K')).toBe(true);
+    expect(store.quickNoteShortcut()).toBe('CommandOrControl+Alt+K');
+    expect(state.settings.quickNoteShortcut).toBe('CommandOrControl+Alt+K');
+  });
+
+  it('retains the previous shortcut when registration is rejected', async () => {
+    await store.init();
+    state.rejectNextSettingsSet = true;
+
+    expect(await store.setQuickNoteShortcut('CommandOrControl+Alt+K')).toBe(false);
+    expect(store.quickNoteShortcut()).toBe('CommandOrControl+Alt+G');
+    expect(store.shortcutError()).toBe(true);
   });
 });

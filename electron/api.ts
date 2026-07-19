@@ -1,5 +1,5 @@
 // Shared contract between preload (implementation) and renderer (window.glacierApi).
-// Mirrors the IPC surface in SPECIFICATION.md §9; search/transfer/share arrive in M6/M8.
+// Mirrors the IPC surface in SPECIFICATION.md §9.
 import type {
   ChecklistItem,
   ImageAsset,
@@ -11,17 +11,50 @@ import type {
   NoteUpdatePatch,
   Settings,
 } from './storage/models';
+import type {
+  ExportDataResult,
+  ExportScope,
+  ImportApplyResult,
+  ImportInspectResult,
+  ImportStrategy,
+} from './transfer-core';
 
 export type { ChecklistItem, ImageAsset, Label, Note, Notebook, Settings };
 export type { NoteCreateInput, NoteFilter, NoteUpdatePatch };
 export type { LanguageCode, NoteType, ThemeName } from './storage/models';
+export type {
+  ExportDataResult,
+  ExportScope,
+  ImportApplyResult,
+  ImportCounts,
+  ImportInspectResult,
+  ImportStrategy,
+} from './transfer-core';
+
+/** Desktop-integration capabilities for graceful degradation (§5.12). */
+export interface SystemCapabilities {
+  tray: boolean;
+  globalShortcut: boolean;
+  quickNoteShortcutRegistered: boolean;
+}
+
+/** Commands the main process (menu, tray) sends to the renderer. */
+export type AppCommand =
+  | 'new-text-note'
+  | 'new-checklist-note'
+  | 'toggle-transfer'
+  | 'open-settings'
+  | 'toggle-shortcut-help';
 
 export interface GlacierApi {
   ping(): Promise<string>;
   notebooks: {
     list(): Promise<Notebook[]>;
     create(name: string): Promise<Notebook>;
-    update(id: string, patch: Partial<Pick<Notebook, 'name' | 'color' | 'sortOrder'>>): Promise<Notebook>;
+    update(
+      id: string,
+      patch: Partial<Pick<Notebook, 'name' | 'color' | 'sortOrder'>>,
+    ): Promise<Notebook>;
     delete(id: string): Promise<void>;
     getDefaultId(): Promise<string>;
   };
@@ -53,5 +86,30 @@ export interface GlacierApi {
   };
   shell: {
     openExternal(url: string): Promise<void>;
+  };
+  transfer: {
+    /** filePath bypasses the OS save dialog; allowed in smoke mode only. */
+    exportData(scope: ExportScope, filePath?: string): Promise<ExportDataResult>;
+    /** filePath bypasses the OS open dialog; allowed in smoke mode only. */
+    importInspect(filePath?: string): Promise<ImportInspectResult>;
+    importApply(strategy: ImportStrategy): Promise<ImportApplyResult>;
+    importCancel(): Promise<void>;
+  };
+  share: {
+    emailNote(noteId: string): Promise<void>;
+  };
+  quickNote: {
+    /** Saves non-empty content as a text note in the default notebook, then closes the window. */
+    save(content: string): Promise<void>;
+    cancel(): Promise<void>;
+  };
+  system: {
+    getCapabilities(): Promise<SystemCapabilities>;
+  };
+  events: {
+    /** Menu/tray commands from the main process. Returns an unsubscriber. */
+    onCommand(callback: (command: AppCommand) => void): () => void;
+    /** Notes changed outside this window (e.g. quick note). Returns an unsubscriber. */
+    onNotesChanged(callback: () => void): () => void;
   };
 }

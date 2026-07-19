@@ -1,0 +1,54 @@
+.quick-note {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  height: 100vh;
+  padding: 12px;
+  box-sizing: border-box;
+  background-color: var(--color-bg);
+}
+
+.quick-note__input {
+  flex: 1;
+  resize: none;
+  padding: 10px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background-color: var(--color-surface);
+  color: var(--color-text);
+  font: inherit;
+
+  &:focus {
+    outline: none;
+    border-color: var(--color-accent);
+  }
+}
+
+.quick-note__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.quick-note__button {
+  padding: 7px 14px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--color-text);
+  cursor: pointer;
+
+  &:hover {
+    background-color: var(--color-surface-elevated);
+  }
+}
+
+.quick-note__button--primary {
+  border-color: transparent;
+  background-color: var(--color-accent);
+  color: var(--color-bg);
+
+  &:hover {
+    background-color: var(--color-accent-muted);
+  }
+}

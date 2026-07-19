@@ -1,4 +1,4 @@
-import { Component, computed, inject } from '@angular/core';
+import { Component, computed, effect, ElementRef, inject, viewChild } from '@angular/core';
 import { I18nService } from '../i18n/i18n.service';
 import { SettingsStore } from '../store/settings-store';
 import { UiStore } from '../store/ui-store';
@@ -18,6 +18,18 @@ export class Header {
   protected readonly isDark = computed(() => this.settings.theme() === 'dark');
 
   private searchTimer: ReturnType<typeof setTimeout> | undefined;
+
+  private readonly searchInputRef = viewChild.required<ElementRef<HTMLInputElement>>('searchInput');
+
+  constructor() {
+    effect(() => {
+      if (this.ui.focusSearchTick() > 0) {
+        const input = this.searchInputRef().nativeElement;
+        input.focus();
+        input.select();
+      }
+    });
+  }
 
   protected toggleTheme(): void {
     void this.settings.setTheme(this.isDark() ? 'light' : 'dark');

@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { readJsonFile, writeJsonAtomic } from './json-store';
-import { ImageAsset, newId, SCHEMA_VERSION } from './models';
+import { ImageAsset, newId, requireEntityId, SCHEMA_VERSION } from './models';
 
 interface ImagesFile {
   schemaVersion: number;
@@ -26,6 +26,7 @@ export class ImageStore {
   }
 
   init(): void {
+    this.images.clear();
     fs.mkdirSync(this.dir, { recursive: true });
     for (const asset of readJsonFile<ImagesFile>(this.file)?.images ?? []) {
       this.images.set(asset.id, asset);
@@ -44,13 +45,38 @@ export class ImageStore {
     return asset;
   }
 
+  /** Upsert with a caller-provided id (import path). */
+  addWithId(id: string, data: Uint8Array, mimeType: string, fileName?: string): ImageAsset {
+    requireEntityId(id);
+    if (!EXTENSIONS[mimeType]) {
+      throw new Error(`Unsupported image type: ${mimeType}`);
+    }
+    const existing = this.images.get(id);
+    if (existing && existing.mimeType !== mimeType) {
+      fs.rmSync(this.imageFile(existing), { force: true });
+    }
+    const asset: ImageAsset = { id, mimeType, ...(fileName ? { fileName } : {}) };
+    fs.writeFileSync(this.imageFile(asset), Buffer.from(data));
+    this.images.set(asset.id, asset);
+    this.persist();
+    return asset;
+  }
+
   has(id: string): boolean {
     return this.images.has(id);
   }
 
-  getFileInfo(id: string): { path: string; mimeType: string } {
+  getFileInfo(id: string): { path: string; mimeType: string; fileName?: string } {
     const asset = this.get(id);
-    return { path: this.imageFile(asset), mimeType: asset.mimeType };
+    return {
+      path: this.imageFile(asset),
+      mimeType: asset.mimeType,
+      ...(asset.fileName ? { fileName: asset.fileName } : {}),
+    };
+  }
+
+  list(): ImageAsset[] {
+    return [...this.images.values()].map((asset) => ({ ...asset }));
   }
 
   getDataUrl(id: string): string {
@@ -75,6 +101,7 @@ export class ImageStore {
   }
 
   private imageFile(asset: ImageAsset): string {
+    requireEntityId(asset.id);
     return path.join(this.dir, `${asset.id}.${EXTENSIONS[asset.mimeType]}`);
   }
 
