@@ -1,73 +1,106 @@
-# GlacierNotes
+# Glacier Notes
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 22.0.7.
+Glacier Notes is a local-first desktop note-taking app inspired by Google Keep. It runs on
+Electron and Angular, stores everything on the local filesystem, and remains fully functional
+without a network connection. There are no accounts, cloud services, analytics, or runtime CDN
+dependencies.
 
-## Development server
+> Glacier Notes is currently at version 0.1.0. Core functionality is implemented; packaging and
+> cross-platform release validation are tracked in M10.
 
-To start a local development server, run:
+## Features
 
-```bash
-ng serve
-```
+- Markdown text notes with live preview and formatting shortcuts
+- Checklist notes with reordering, inline Markdown, and card-level toggles
+- Notebooks, labels, colors, pinning, archive, trash, and automatic trash cleanup
+- Global search across titles, content, and checklist items
+- PNG, JPEG, WebP, and GIF attachments via picker, drag-and-drop, or clipboard
+- Dark and light themes with runtime English/German switching
+- Versioned `.glacier.json` backup, restore, notebook export, and single-note export
+- Email sharing through the operating system's default mail client
+- System tray, close-to-tray behavior, keyboard shortcuts, and an always-on-top quick-note window
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+## Technology and Architecture
 
-## Code scaffolding
+The Angular 22 renderer lives in `src/`; the Electron 43 main process, preload bridge, local
+repositories, and desktop integrations live in `electron/`. Renderer code cannot access Node.js
+directly. All privileged operations cross the typed `window.glacierApi` bridge with context
+isolation and sandboxing enabled.
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+Notes and metadata are stored as human-readable JSON, with one file per note and binary images
+in a separate directory. Markdown is rendered with `marked`, sanitized with DOMPurify, and
+protected by a restrictive Content Security Policy.
 
-```bash
-ng generate component component-name
-```
+## Development
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
-
-```bash
-ng generate --help
-```
-
-## Building
-
-To build the project run:
-
-```bash
-ng build
-```
-
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
-
-## Running unit tests
-
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
+Prerequisites: a current Node.js LTS release, npm 11, and the desktop libraries required by
+Electron on your operating system.
 
 ```bash
-ng test
+npm install
+npm start
 ```
 
-## Running end-to-end tests
+`npm start` launches Angular's development server and Electron together with hot reload. Other
+useful commands:
 
-For end-to-end (e2e) testing, run:
+| Command                  | Purpose                                                    |
+| ------------------------ | ---------------------------------------------------------- |
+| `npm test`               | Run the Vitest unit suite through Angular's test builder   |
+| `npm run build`          | Build the Angular renderer and compile Electron TypeScript |
+| `npm run electron:prod`  | Build and launch the production-style application          |
+| `npm run watch`          | Rebuild the Angular renderer when source files change      |
+| `npx prettier --check .` | Check repository formatting                                |
 
-```bash
-ng e2e
-```
+Build artifacts are written to `dist/` and `dist-electron/`.
 
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
+## Local Data and Privacy
 
-## Additional Resources
+Application data is stored below Electron's platform-specific `userData` directory, commonly:
 
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+- Linux: `~/.config/glacier-notes/`
+- Windows: `%APPDATA%/glacier-notes/`
+- macOS: `~/Library/Application Support/glacier-notes/`
 
-## Backup format
+Writes are atomic and debounced. Images larger than 10 MB are downscaled before storage.
+Deleting an attachment or permanently deleting a note garbage-collects unreferenced image
+files. The only network-adjacent operation is opening a `mailto:` URL in an external client.
 
-Glacier Notes exports portable `.glacier.json` files. The stable schema-v1 envelope contains
-`format`, `schemaVersion`, `exportedAt`, `notebooks`, `notes`, `labels`, and base64-encoded
-`images`. New exports also include `scope` (`all`, `notebook`, or `note`) and include
-`defaultNotebookId` for full backups. These two fields are optional so exports created by
-earlier v1 builds remain importable.
+## Backup and Restore
 
-Imports validate every entity and reference before changing local data. When IDs collide,
-choose **Add as copies** to remap all IDs safely or **Replace existing** to overwrite matching
-IDs. Collision-free imports preserve their original IDs. Importing a full backup into a
-pristine installation restores the exported default notebook and removes the generated empty
-one. Interrupted imports are rolled back automatically the next time the app starts.
+Portable `.glacier.json` exports use the stable schema-v1 envelope. It contains notebooks,
+notes, labels, and base64-encoded images plus export scope and default-notebook metadata. Export
+can cover all data, one notebook, or one note.
+
+Imports validate entity IDs, structure, references, image types, and payloads before changing
+local data. Collision-free imports preserve IDs; conflicts can be added as remapped copies or
+replace matching IDs. A full backup imported into a pristine installation restores the original
+default notebook. Interrupted imports are rolled back automatically on the next startup.
+
+## Keyboard Shortcuts
+
+Use `Ctrl` on Linux/Windows or `Cmd` on macOS.
+
+| Shortcut           | Action                         |
+| ------------------ | ------------------------------ |
+| `Ctrl/Cmd+N`       | New text note                  |
+| `Ctrl/Cmd+Shift+N` | New checklist                  |
+| `Ctrl/Cmd+F`       | Focus search                   |
+| `Ctrl/Cmd+Enter`   | Save and close the editor      |
+| `Ctrl/Cmd+E`       | Open import/export             |
+| `Ctrl/Cmd+,`       | Open settings                  |
+| `Ctrl/Cmd+/`       | Show shortcut help             |
+| `Ctrl/Cmd+Alt+G`   | Open Quick Note (configurable) |
+
+Tray icons and global shortcuts depend on desktop-environment support. Some Linux Wayland
+compositors do not expose global shortcuts; Glacier Notes disables the control and explains the
+limitation when unavailable.
+
+## Project Documentation
+
+- [SPECIFICATION.md](SPECIFICATION.md) defines product behavior and acceptance criteria.
+- [MILESTONES.md](MILESTONES.md) tracks implementation and release readiness.
+- [AGENTS.md](AGENTS.md) contains contributor workflow and coding conventions.
+
+Packaging for AppImage/deb, NSIS/portable, and dmg is planned for M10. Until then, run the app
+from source using the commands above.
