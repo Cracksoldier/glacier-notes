@@ -1,5 +1,6 @@
-import { AfterViewInit, Component, computed, ElementRef, input, OnDestroy, output, signal, viewChild } from '@angular/core';
+import { AfterViewInit, Component, computed, ElementRef, inject, input, OnDestroy, output, signal, viewChild } from '@angular/core';
 import type { Notebook } from '../../../../electron/api';
+import { I18nService } from '../../core/i18n/i18n.service';
 
 export type NotebookDeleteResult = { mode: 'delete' } | { mode: 'move'; targetId: string };
 
@@ -9,6 +10,7 @@ export type NotebookDeleteResult = { mode: 'delete' } | { mode: 'move'; targetId
   styleUrl: './notebook-delete-dialog.scss',
 })
 export class NotebookDeleteDialog implements AfterViewInit, OnDestroy {
+  protected readonly i18n = inject(I18nService);
   readonly notebook = input.required<Notebook>();
   readonly notebooks = input.required<Notebook[]>();
   readonly noteCount = input.required<number>();

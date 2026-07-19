@@ -1,6 +1,17 @@
-<article class="note-card" [class.note-card--trashed]="trashed()" (click)="open()">
+<article
+  class="note-card"
+  [class.note-card--trashed]="trashed()"
+  [style.background-color]="colorVar()"
+  (click)="open()"
+>
   @if (note().pinned && !trashed()) {
     <i class="note-card__pin-badge fa-solid fa-thumbtack" aria-hidden="true"></i>
+  }
+  @if (searchQuery() && note().archived) {
+    <span class="note-card__archived-badge">
+      <i class="fa-solid fa-box-archive" aria-hidden="true"></i>
+      {{ i18n.t('card.archived') }}
+    </span>
   }
   @if (note().imageIds.length > 0) {
     <div class="note-card__image-wrap">
@@ -11,7 +22,7 @@
     </div>
   }
   @if (note().title) {
-    <h3 class="note-card__title">{{ note().title }}</h3>
+    <h3 class="note-card__title">@for (seg of titleSegments(); track $index) {@if (seg.match) {<mark>{{ seg.text }}</mark>} @else {{{ seg.text }}}}</h3>
   }
   @if (note().type === 'checklist') {
     @if (checklistEntries().length) {
@@ -33,24 +44,44 @@
           </div>
         }
         @if (checklistMore() > 0) {
-          <p class="note-card__more">+{{ checklistMore() }} more</p>
+          <p class="note-card__more">{{ i18n.t('card.more', { count: checklistMore() }) }}</p>
         }
       </div>
     } @else if (!note().title) {
-      <p class="note-card__blank">Empty note</p>
+      <p class="note-card__blank">{{ i18n.t('card.emptyNote') }}</p>
     }
   } @else if (note().content) {
     <div class="note-card__preview markdown-body" [innerHTML]="previewHtml()" (click)="onPreviewClick($event)"></div>
   } @else if (!note().title) {
-    <p class="note-card__blank">Empty note</p>
+    <p class="note-card__blank">{{ i18n.t('card.emptyNote') }}</p>
+  }
+
+  @if (cardLabels().length > 0) {
+    <div class="note-card__labels">
+      @for (label of cardLabels(); track label.id) {
+        <button type="button" class="note-card__label" (click)="openLabel($event, label.id)">
+          {{ label.name }}
+        </button>
+      }
+    </div>
   }
 
   <div class="note-card__actions" (click)="$event.stopPropagation()">
     @if (trashed()) {
-      <button type="button" class="note-card__action" title="Restore" (click)="noteStore.restore(note().id)">
+      <button
+        type="button"
+        class="note-card__action"
+        [title]="i18n.t('card.restore')"
+        (click)="noteStore.restore(note().id)"
+      >
         <i class="fa-solid fa-trash-arrow-up" aria-hidden="true"></i>
       </button>
-      <button type="button" class="note-card__action" title="Delete forever" (click)="purgeConfirm.set(true)">
+      <button
+        type="button"
+        class="note-card__action"
+        [title]="i18n.t('card.deleteForever')"
+        (click)="purgeConfirm.set(true)"
+      >
         <i class="fa-solid fa-xmark" aria-hidden="true"></i>
       </button>
     } @else {
@@ -58,7 +89,7 @@
         type="button"
         class="note-card__action"
         [class.note-card__action--active]="note().pinned"
-        [title]="note().pinned ? 'Unpin' : 'Pin'"
+        [title]="note().pinned ? i18n.t('card.unpin') : i18n.t('card.pin')"
         (click)="noteStore.togglePin(note())"
       >
         <i class="fa-solid fa-thumbtack" aria-hidden="true"></i>
@@ -66,20 +97,43 @@
       <button
         type="button"
         class="note-card__action"
-        [title]="note().archived ? 'Unarchive' : 'Archive'"
+        [title]="note().archived ? i18n.t('card.unarchive') : i18n.t('card.archive')"
         (click)="noteStore.setArchived(note().id, !note().archived)"
       >
         <i class="fa-solid" [class.fa-box-archive]="!note().archived" [class.fa-box-open]="note().archived" aria-hidden="true"></i>
       </button>
       <span class="note-card__move">
-        <button type="button" class="note-card__action" title="Move to notebook" (click)="toggleMoveMenu($event)">
+        <button
+          type="button"
+          class="note-card__action"
+          [title]="i18n.t('card.color')"
+          (click)="toggleColorMenu($event)"
+        >
+          <i class="fa-solid fa-palette" aria-hidden="true"></i>
+        </button>
+        @if (colorMenuOpen()) {
+          <app-color-picker-menu [note]="note()" (closed)="colorMenuOpen.set(false)" />
+        }
+      </span>
+      <span class="note-card__move">
+        <button
+          type="button"
+          class="note-card__action"
+          [title]="i18n.t('card.move')"
+          (click)="toggleMoveMenu($event)"
+        >
           <i class="fa-solid fa-folder-open" aria-hidden="true"></i>
         </button>
         @if (moveMenuOpen()) {
           <app-move-note-menu [note]="note()" (closed)="moveMenuOpen.set(false)" />
         }
       </span>
-      <button type="button" class="note-card__action" title="Delete" (click)="noteStore.trash(note().id)">
+      <button
+        type="button"
+        class="note-card__action"
+        [title]="i18n.t('common.delete')"
+        (click)="noteStore.trash(note().id)"
+      >
         <i class="fa-solid fa-trash-can" aria-hidden="true"></i>
       </button>
     }
@@ -88,9 +142,9 @@
 
 @if (purgeConfirm()) {
   <app-confirm-dialog
-    title="Delete note forever?"
-    message="This note will be permanently deleted. This cannot be undone."
-    confirmLabel="Delete forever"
+    [title]="i18n.t('card.purgeTitle')"
+    [message]="i18n.t('card.purgeMessage')"
+    [confirmLabel]="i18n.t('card.deleteForever')"
     (closed)="onPurgeConfirmed($event)"
   />
 }

@@ -5,7 +5,9 @@
       <p class="confirm__message">{{ message() }}</p>
     }
     <div class="confirm__actions">
-      <button type="button" class="confirm__button" (click)="closed.emit(false)">Cancel</button>
+      <button type="button" class="confirm__button" (click)="closed.emit(false)">
+        {{ i18n.t('common.cancel') }}
+      </button>
       <button type="button" class="confirm__button confirm__button--danger" (click)="closed.emit(true)">
         {{ confirmLabel() }}
       </button>

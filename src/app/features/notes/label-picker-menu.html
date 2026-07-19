@@ -1,0 +1,23 @@
+<div class="label-menu" (click)="$event.stopPropagation()">
+  <p class="label-menu__heading">{{ i18n.t('label.pickerHeading') }}</p>
+  @for (label of labelStore.labels(); track label.id) {
+    <label class="label-menu__item">
+      <input type="checkbox" [checked]="isAssigned(label.id)" (change)="toggle(label.id)" />
+      <span class="label-menu__name">{{ label.name }}</span>
+    </label>
+  } @empty {
+    <p class="label-menu__empty">{{ i18n.t('label.pickerEmpty') }}</p>
+  }
+  <div class="label-menu__create">
+    <input
+      class="label-menu__input"
+      [placeholder]="i18n.t('label.newPlaceholder')"
+      [value]="newName()"
+      (input)="newName.set($any($event.target).value)"
+      (keydown.enter)="createAndAssign()"
+    />
+    <button type="button" class="label-menu__add" [title]="i18n.t('label.create')" [disabled]="!newName().trim()" (click)="createAndAssign()">
+      <i class="fa-solid fa-plus" aria-hidden="true"></i>
+    </button>
+  </div>
+</div>

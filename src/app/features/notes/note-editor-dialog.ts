@@ -10,8 +10,8 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
-import { DatePipe } from '@angular/common';
 import type { ChecklistItem, Note, NoteUpdatePatch } from '../../../../electron/api';
+import { I18nService } from '../../core/i18n/i18n.service';
 import { ImageUploadService } from '../../core/images/image-upload';
 import { MarkdownService } from '../../core/markdown/markdown.service';
 import { NoteStore } from '../../core/store/note-store';
@@ -21,6 +21,9 @@ import { Autofocus } from '../../shared/autofocus';
 import { GlacierImgPipe } from '../../shared/glacier-img.pipe';
 import { ChecklistEditor } from './checklist-editor';
 import { checklistToText, textToChecklist } from './checklist-model';
+import { ColorPickerMenu } from './color-picker-menu';
+import { LabelPickerMenu } from './label-picker-menu';
+import { noteColorVar } from './note-colors';
 import { insertLink, orderedList, prefixLines, toggleCode, wrapSelection } from './markdown-edit';
 import { MarkdownToolbar, ToolbarAction } from './markdown-toolbar';
 
@@ -28,7 +31,7 @@ const SAVE_DEBOUNCE_MS = 500;
 
 @Component({
   selector: 'app-note-editor-dialog',
-  imports: [Autofocus, ChecklistEditor, DatePipe, GlacierImgPipe, MarkdownToolbar],
+  imports: [Autofocus, ChecklistEditor, ColorPickerMenu, GlacierImgPipe, LabelPickerMenu, MarkdownToolbar],
   templateUrl: './note-editor-dialog.html',
   styleUrl: './note-editor-dialog.scss',
 })
@@ -40,13 +43,17 @@ export class NoteEditorDialog implements OnInit, AfterViewInit, OnDestroy {
   private readonly upload = inject(ImageUploadService);
   protected readonly ui = inject(UiStore);
   protected readonly settings = inject(SettingsStore);
+  protected readonly i18n = inject(I18nService);
 
   protected readonly title = signal('');
   protected readonly content = signal('');
   protected readonly items = signal<ChecklistItem[]>([]);
   protected readonly previewMode = signal(false);
+  protected readonly colorMenuOpen = signal(false);
+  protected readonly labelMenuOpen = signal(false);
   protected readonly previewHtml = computed(() => this.markdown.render(this.content()));
   protected readonly isChecklist = computed(() => this.note().type === 'checklist');
+  protected readonly colorVar = computed(() => noteColorVar(this.note().color));
 
   private readonly dialogRef = viewChild.required<ElementRef<HTMLDialogElement>>('dialog');
   private readonly textareaRef = viewChild<ElementRef<HTMLTextAreaElement>>('textarea');
@@ -232,6 +239,18 @@ export class NoteEditorDialog implements OnInit, AfterViewInit, OnDestroy {
       event.preventDefault();
       void window.glacierApi.shell.openExternal(anchor.href);
     }
+  }
+
+  protected toggleColorMenu(event: Event): void {
+    event.stopPropagation();
+    this.labelMenuOpen.set(false);
+    this.colorMenuOpen.update((open) => !open);
+  }
+
+  protected toggleLabelMenu(event: Event): void {
+    event.stopPropagation();
+    this.colorMenuOpen.set(false);
+    this.labelMenuOpen.update((open) => !open);
   }
 
   protected onCancel(event: Event): void {

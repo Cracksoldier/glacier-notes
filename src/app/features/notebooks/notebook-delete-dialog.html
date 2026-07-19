@@ -1,18 +1,22 @@
 <dialog #dialog class="nb-delete" (cancel)="onCancel($event)" (click)="onBackdropClick($event)">
   <div class="nb-delete__body">
-    <h3 class="nb-delete__title">Delete notebook "{{ notebook().name }}"?</h3>
+    <h3 class="nb-delete__title">{{ i18n.t('notebook.deleteTitle', { name: notebook().name }) }}</h3>
 
     @if (noteCount() > 0) {
       <p class="nb-delete__message">
-        This notebook contains {{ noteCount() }} {{ noteCount() === 1 ? 'note' : 'notes' }}.
+        {{
+          noteCount() === 1
+            ? i18n.t('notebook.containsOne')
+            : i18n.t('notebook.containsMany', { count: noteCount() })
+        }}
       </p>
       <label class="nb-delete__option">
         <input type="radio" name="mode" [checked]="mode() === 'delete'" (change)="mode.set('delete')" />
-        <span>Delete the notes too</span>
+        <span>{{ i18n.t('notebook.deleteNotes') }}</span>
       </label>
       <label class="nb-delete__option">
         <input type="radio" name="mode" [checked]="mode() === 'move'" (change)="mode.set('move')" />
-        <span>Move them to:</span>
+        <span>{{ i18n.t('notebook.moveTo') }}</span>
         <select
           class="nb-delete__select"
           [disabled]="mode() !== 'move'"
@@ -25,12 +29,12 @@
         </select>
       </label>
     } @else {
-      <p class="nb-delete__message">This notebook is empty.</p>
+      <p class="nb-delete__message">{{ i18n.t('notebook.empty') }}</p>
     }
 
     <div class="nb-delete__actions">
-      <button type="button" class="nb-delete__button" (click)="closed.emit(null)">Cancel</button>
-      <button type="button" class="nb-delete__button nb-delete__button--danger" (click)="confirm()">Delete</button>
+      <button type="button" class="nb-delete__button" (click)="closed.emit(null)">{{ i18n.t('common.cancel') }}</button>
+      <button type="button" class="nb-delete__button nb-delete__button--danger" (click)="confirm()">{{ i18n.t('common.delete') }}</button>
     </div>
   </div>
 </dialog>

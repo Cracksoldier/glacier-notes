@@ -1,4 +1,5 @@
-import { Component, input, output } from '@angular/core';
+import { Component, inject, input, output } from '@angular/core';
+import { I18nService, TranslationKey } from '../../core/i18n/i18n.service';
 
 export type ToolbarAction = 'bold' | 'italic' | 'h1' | 'h2' | 'ul' | 'ol' | 'link' | 'code' | 'image';
 
@@ -9,7 +10,7 @@ export type ToolbarAction = 'bold' | 'italic' | 'h1' | 'h2' | 'ul' | 'ol' | 'lin
       <button
         type="button"
         class="toolbar__button"
-        [title]="button.title"
+        [title]="i18n.t(button.titleKey)"
         [disabled]="disabled()"
         (mousedown)="$event.preventDefault()"
         (click)="action.emit(button.action)"
@@ -59,15 +60,22 @@ export class MarkdownToolbar {
   readonly disabled = input(false);
   readonly action = output<ToolbarAction>();
 
-  protected readonly buttons: { action: ToolbarAction; title: string; icon?: string; label?: string }[] = [
-    { action: 'bold', title: 'Bold', icon: 'fa-bold' },
-    { action: 'italic', title: 'Italic', icon: 'fa-italic' },
-    { action: 'h1', title: 'Heading 1', label: 'H1' },
-    { action: 'h2', title: 'Heading 2', label: 'H2' },
-    { action: 'ul', title: 'Bulleted list', icon: 'fa-list-ul' },
-    { action: 'ol', title: 'Numbered list', icon: 'fa-list-ol' },
-    { action: 'link', title: 'Link', icon: 'fa-link' },
-    { action: 'code', title: 'Code', icon: 'fa-code' },
-    { action: 'image', title: 'Insert image', icon: 'fa-image' },
+  protected readonly i18n = inject(I18nService);
+
+  protected readonly buttons: {
+    action: ToolbarAction;
+    titleKey: TranslationKey;
+    icon?: string;
+    label?: string;
+  }[] = [
+    { action: 'bold', titleKey: 'mdToolbar.bold', icon: 'fa-bold' },
+    { action: 'italic', titleKey: 'mdToolbar.italic', icon: 'fa-italic' },
+    { action: 'h1', titleKey: 'mdToolbar.h1', label: 'H1' },
+    { action: 'h2', titleKey: 'mdToolbar.h2', label: 'H2' },
+    { action: 'ul', titleKey: 'mdToolbar.ul', icon: 'fa-list-ul' },
+    { action: 'ol', titleKey: 'mdToolbar.ol', icon: 'fa-list-ol' },
+    { action: 'link', titleKey: 'mdToolbar.link', icon: 'fa-link' },
+    { action: 'code', titleKey: 'mdToolbar.code', icon: 'fa-code' },
+    { action: 'image', titleKey: 'mdToolbar.image', icon: 'fa-image' },
   ];
 }

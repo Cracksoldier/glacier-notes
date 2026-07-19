@@ -168,6 +168,14 @@ dialog {
   }
 }
 
+// Search match highlighting (see MarkdownService / highlight.ts).
+mark {
+  padding: 0 1px;
+  border-radius: 2px;
+  background-color: var(--color-accent);
+  color: var(--color-bg);
+}
+
 ::-webkit-scrollbar {
   width: 10px;
   height: 10px;

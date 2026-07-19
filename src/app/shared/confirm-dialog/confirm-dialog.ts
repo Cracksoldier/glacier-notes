@@ -1,4 +1,14 @@
-import { AfterViewInit, Component, ElementRef, input, OnDestroy, output, viewChild } from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  ElementRef,
+  inject,
+  input,
+  OnDestroy,
+  output,
+  viewChild,
+} from '@angular/core';
+import { I18nService } from '../../core/i18n/i18n.service';
 
 @Component({
   selector: 'app-confirm-dialog',
@@ -10,6 +20,8 @@ export class ConfirmDialog implements AfterViewInit, OnDestroy {
   readonly message = input('');
   readonly confirmLabel = input('Delete');
   readonly closed = output<boolean>();
+
+  protected readonly i18n = inject(I18nService);
 
   private readonly dialogRef = viewChild.required<ElementRef<HTMLDialogElement>>('dialog');
 

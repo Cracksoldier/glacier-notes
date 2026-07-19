@@ -1,5 +1,6 @@
-import { afterEveryRender, Component, computed, ElementRef, input, model, signal, viewChildren } from '@angular/core';
+import { afterEveryRender, Component, computed, ElementRef, inject, input, model, signal, viewChildren } from '@angular/core';
 import type { ChecklistItem } from '../../../../electron/api';
+import { I18nService } from '../../core/i18n/i18n.service';
 import { displayOrder, newItem, reorderItems, resequence } from './checklist-model';
 
 @Component({
@@ -10,6 +11,8 @@ import { displayOrder, newItem, reorderItems, resequence } from './checklist-mod
 export class ChecklistEditor {
   // model() so mutations update synchronously — deriving new arrays from a plain
   // input() would read stale state until the next change-detection pass.
+  protected readonly i18n = inject(I18nService);
+
   readonly items = model.required<ChecklistItem[]>();
   readonly moveCheckedToBottom = input.required<boolean>();
 

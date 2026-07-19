@@ -1,9 +1,10 @@
-import type { GlacierApi, ImageAsset, Note, Notebook, Settings } from '../../../electron/api';
+import type { GlacierApi, ImageAsset, Label, Note, Notebook, Settings } from '../../../electron/api';
 
 // In-memory fake of the preload bridge for renderer unit tests.
 export function installGlacierApiStub(): {
   notes: Note[];
   notebooks: Notebook[];
+  labels: Label[];
   images: ImageAsset[];
   settings: Settings;
 } {
@@ -18,6 +19,7 @@ export function installGlacierApiStub(): {
   const state = {
     notebooks: [defaultNotebook] as Notebook[],
     notes: [] as Note[],
+    labels: [] as Label[],
     images: [] as ImageAsset[],
     settings: {
       theme: 'dark',
@@ -106,10 +108,23 @@ export function installGlacierApiStub(): {
       move: async (id, notebookId) => Object.assign(getNote(id), { notebookId }),
     },
     labels: {
-      list: async () => [],
-      create: async (name) => ({ id: newId(), name }),
-      update: async (id, patch) => ({ id, name: patch.name ?? '' }),
-      delete: async () => undefined,
+      list: async () => [...state.labels].sort((a, b) => a.name.localeCompare(b.name)),
+      create: async (name) => {
+        const label: Label = { id: newId(), name };
+        state.labels.push(label);
+        return label;
+      },
+      update: async (id, patch) => {
+        const label = state.labels.find((l) => l.id === id);
+        if (!label) throw new Error(`Label not found: ${id}`);
+        return Object.assign(label, patch);
+      },
+      delete: async (id) => {
+        state.labels = state.labels.filter((l) => l.id !== id);
+        for (const note of state.notes) {
+          note.labels = note.labels.filter((l) => l !== id);
+        }
+      },
     },
     images: {
       add: async (_data, mimeType, fileName) => {

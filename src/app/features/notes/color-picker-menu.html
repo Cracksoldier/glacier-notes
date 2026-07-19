@@ -1,0 +1,21 @@
+<div class="color-menu" (click)="$event.stopPropagation()">
+  <button
+    type="button"
+    class="color-menu__swatch color-menu__swatch--none"
+    [class.color-menu__swatch--active]="!note().color"
+    [title]="i18n.t('color.none')"
+    (click)="choose(undefined)"
+  >
+    <i class="fa-solid fa-ban" aria-hidden="true"></i>
+  </button>
+  @for (color of colors; track color) {
+    <button
+      type="button"
+      class="color-menu__swatch"
+      [class.color-menu__swatch--active]="note().color === color"
+      [style.background]="'var(--note-' + color + ')'"
+      [title]="colorTitle(color)"
+      (click)="choose(color)"
+    ></button>
+  }
+</div>

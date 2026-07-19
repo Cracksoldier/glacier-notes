@@ -81,9 +81,9 @@ Implementation plan derived from [SPECIFICATION.md](SPECIFICATION.md). Each mile
 
 **Goal:** Finding and organizing notes.
 
-- [ ] Global search: title, content, checklist items; case-insensitive, debounced live results, match highlighting; all-notebooks vs. current-notebook filter (§5.6)
-- [ ] Note colors from fixed palette (readable in both themes), on card + editor (§5.2, §5.9)
-- [ ] Labels: manage (create/rename/delete), assign multiple per note, sidebar filter view (§5.2, §6)
+- [x] Global search: title, content, checklist items; case-insensitive, debounced live results, match highlighting; all-notebooks vs. current-notebook filter (§5.6)
+- [x] Note colors from fixed palette (readable in both themes), on card + editor (§5.2, §5.9)
+- [x] Labels: manage (create/rename/delete), assign multiple per note, sidebar filter view (§5.2, §6)
 
 **Done when:** acceptance criteria 6 and 13 pass.
 
@@ -93,9 +93,9 @@ Implementation plan derived from [SPECIFICATION.md](SPECIFICATION.md). Each mile
 
 **Goal:** Visual identity and both languages.
 
-- [ ] Theme tokens as CSS custom properties; cold dark blue theme (default) + light theme; header toggle persisted (§5.9, §7)
-- [ ] Full UI pass on both themes, incl. note color palette pairs (§5.9)
-- [ ] i18n framework (runtime switching); English + German translation files, bundled locally; language setting with OS-locale default; localized dates (§5.10)
+- [x] Theme tokens as CSS custom properties; cold dark blue theme (default) + light theme; header toggle persisted (§5.9, §7)
+- [x] Full UI pass on both themes, incl. note color palette pairs (§5.9)
+- [x] i18n framework (runtime switching); English + German translation files, bundled locally; language setting with OS-locale default; localized dates (§5.10)
 
 **Done when:** acceptance criteria 2 and 12 pass.
 

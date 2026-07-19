@@ -2,6 +2,7 @@ import { inject, Injectable } from '@angular/core';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import DOMPurify from 'dompurify';
 import { marked } from 'marked';
+import { highlightHtml } from './highlight';
 
 const PREVIEW_SOURCE_LIMIT = 600;
 
@@ -29,25 +30,34 @@ export class MarkdownService {
 
   // The only place allowed to bypass Angular's sanitizer: DOMPurify runs first,
   // and the strict CSP (script-src 'self') is the second line of defense.
-  render(markdown: string): SafeHtml {
+  // Highlighting runs after DOMPurify — safe because highlightHtml only wraps
+  // existing text nodes in <mark>; the query never becomes markup.
+  render(markdown: string, highlight?: string): SafeHtml {
     const html = marked.parse(markdown, { gfm: true, breaks: true, async: false });
     const clean = DOMPurify.sanitize(html, {
       FORBID_TAGS: ['style', 'form', 'input', 'button'],
       ALLOWED_URI_REGEXP: ALLOWED_URI,
     });
-    return this.sanitizer.bypassSecurityTrustHtml(clean);
+    return this.sanitizer.bypassSecurityTrustHtml(this.applyHighlight(clean, highlight));
   }
 
-  renderPreview(markdown: string): SafeHtml {
-    return this.render(markdown.length > PREVIEW_SOURCE_LIMIT ? `${markdown.slice(0, PREVIEW_SOURCE_LIMIT)}…` : markdown);
+  renderPreview(markdown: string, highlight?: string): SafeHtml {
+    return this.render(
+      markdown.length > PREVIEW_SOURCE_LIMIT ? `${markdown.slice(0, PREVIEW_SOURCE_LIMIT)}…` : markdown,
+      highlight,
+    );
   }
 
   // Inline-only markdown (bold/italic/code/links) for checklist item text — no block elements.
-  renderInline(markdown: string): SafeHtml {
+  renderInline(markdown: string, highlight?: string): SafeHtml {
     const html = marked.parseInline(markdown, { gfm: true, breaks: true, async: false });
     const clean = DOMPurify.sanitize(html, {
       FORBID_TAGS: ['img', 'style', 'form', 'input', 'button'],
     });
-    return this.sanitizer.bypassSecurityTrustHtml(clean);
+    return this.sanitizer.bypassSecurityTrustHtml(this.applyHighlight(clean, highlight));
+  }
+
+  private applyHighlight(clean: string, highlight: string | undefined): string {
+    return highlight?.trim() ? highlightHtml(clean, highlight) : clean;
   }
 }

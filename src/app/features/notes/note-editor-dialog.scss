@@ -91,7 +91,8 @@
   }
 }
 
-.editor__add-image {
+.editor__add-image,
+.editor__color {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -107,6 +108,11 @@
     background-color: var(--color-surface-elevated);
     color: var(--color-text);
   }
+}
+
+.editor__menu-anchor {
+  position: relative;
+  display: inline-flex;
 }
 
 .editor__toolbar {

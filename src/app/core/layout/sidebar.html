@@ -1,6 +1,6 @@
 <nav class="sidebar">
   <section class="sidebar__section">
-    <h2 class="sidebar__heading">Notebooks</h2>
+    <h2 class="sidebar__heading">{{ i18n.t('sidebar.notebooks') }}</h2>
     <ul class="sidebar__list">
       @for (notebook of notebookStore.notebooks(); track notebook.id; let first = $first; let last = $last) {
         <li class="sidebar__row">
@@ -29,7 +29,7 @@
               <button
                 type="button"
                 class="sidebar__action"
-                title="Move up"
+                [title]="i18n.t('sidebar.moveUp')"
                 [disabled]="first"
                 (click)="reorder($event, notebook.id, 'up')"
               >
@@ -38,17 +38,27 @@
               <button
                 type="button"
                 class="sidebar__action"
-                title="Move down"
+                [title]="i18n.t('sidebar.moveDown')"
                 [disabled]="last"
                 (click)="reorder($event, notebook.id, 'down')"
               >
                 <i class="fa-solid fa-chevron-down" aria-hidden="true"></i>
               </button>
-              <button type="button" class="sidebar__action" title="Rename" (click)="editingId.set(notebook.id)">
+              <button
+                type="button"
+                class="sidebar__action"
+                [title]="i18n.t('common.rename')"
+                (click)="editingId.set(notebook.id)"
+              >
                 <i class="fa-solid fa-pen" aria-hidden="true"></i>
               </button>
               @if (notebook.id !== notebookStore.defaultId()) {
-                <button type="button" class="sidebar__action" title="Delete" (click)="deleteTarget.set(notebook)">
+                <button
+                  type="button"
+                  class="sidebar__action"
+                  [title]="i18n.t('common.delete')"
+                  (click)="deleteTarget.set(notebook)"
+                >
                   <i class="fa-solid fa-trash-can" aria-hidden="true"></i>
                 </button>
               }
@@ -62,7 +72,7 @@
             class="sidebar__input"
             #createInput
             appAutofocus
-            placeholder="Notebook name"
+            [placeholder]="i18n.t('sidebar.notebookName')"
             (keydown.enter)="createInput.blur()"
             (keydown.escape)="creating.set(false)"
             (blur)="commitCreate(createInput.value)"
@@ -70,7 +80,7 @@
         } @else {
           <button type="button" class="sidebar__item sidebar__item--muted" (click)="creating.set(true)">
             <i class="fa-solid fa-plus" aria-hidden="true"></i>
-            <span>New notebook</span>
+            <span>{{ i18n.t('sidebar.newNotebook') }}</span>
           </button>
         }
       </li>
@@ -78,11 +88,71 @@
   </section>
 
   <section class="sidebar__section">
-    <h2 class="sidebar__heading">Labels</h2>
-    <p class="sidebar__empty">
-      <i class="fa-solid fa-tag" aria-hidden="true"></i>
-      No labels yet
-    </p>
+    <h2 class="sidebar__heading">{{ i18n.t('sidebar.labels') }}</h2>
+    <ul class="sidebar__list">
+      @for (label of labelStore.labels(); track label.id) {
+        <li class="sidebar__row">
+          @if (labelEditingId() === label.id) {
+            <input
+              class="sidebar__input"
+              #labelRenameInput
+              appAutofocus
+              [value]="label.name"
+              (keydown.enter)="labelRenameInput.blur()"
+              (keydown.escape)="labelEditingId.set(null)"
+              (blur)="commitLabelRename(label, labelRenameInput.value)"
+            />
+          } @else {
+            <button
+              type="button"
+              class="sidebar__item"
+              [class.sidebar__item--active]="selectedLabelId() === label.id"
+              (click)="ui.selectLabel(label.id)"
+            >
+              <i class="fa-solid fa-tag" aria-hidden="true"></i>
+              <span class="sidebar__name">{{ label.name }}</span>
+              <span class="sidebar__count">{{ countsByLabel().get(label.id) ?? 0 }}</span>
+            </button>
+            <span class="sidebar__actions">
+              <button
+                type="button"
+                class="sidebar__action"
+                [title]="i18n.t('common.rename')"
+                (click)="labelEditingId.set(label.id)"
+              >
+                <i class="fa-solid fa-pen" aria-hidden="true"></i>
+              </button>
+              <button
+                type="button"
+                class="sidebar__action"
+                [title]="i18n.t('common.delete')"
+                (click)="labelDeleteTarget.set(label)"
+              >
+                <i class="fa-solid fa-trash-can" aria-hidden="true"></i>
+              </button>
+            </span>
+          }
+        </li>
+      }
+      <li>
+        @if (labelCreating()) {
+          <input
+            class="sidebar__input"
+            #labelCreateInput
+            appAutofocus
+            [placeholder]="i18n.t('sidebar.labelName')"
+            (keydown.enter)="labelCreateInput.blur()"
+            (keydown.escape)="labelCreating.set(false)"
+            (blur)="commitLabelCreate(labelCreateInput.value)"
+          />
+        } @else {
+          <button type="button" class="sidebar__item sidebar__item--muted" (click)="labelCreating.set(true)">
+            <i class="fa-solid fa-plus" aria-hidden="true"></i>
+            <span>{{ i18n.t('sidebar.newLabel') }}</span>
+          </button>
+        }
+      </li>
+    </ul>
   </section>
 
   <div class="sidebar__spacer"></div>
@@ -97,7 +167,7 @@
           (click)="ui.showArchive()"
         >
           <i class="fa-solid fa-box-archive" aria-hidden="true"></i>
-          <span>Archive</span>
+          <span>{{ i18n.t('sidebar.archive') }}</span>
           <span class="sidebar__count">{{ noteStore.archived().length }}</span>
         </button>
       </li>
@@ -109,14 +179,14 @@
           (click)="ui.showTrash()"
         >
           <i class="fa-solid fa-trash-can" aria-hidden="true"></i>
-          <span>Trash</span>
+          <span>{{ i18n.t('sidebar.trash') }}</span>
           <span class="sidebar__count">{{ noteStore.trashed().length }}</span>
         </button>
       </li>
       <li>
         <button type="button" class="sidebar__item" disabled>
           <i class="fa-solid fa-file-export" aria-hidden="true"></i>
-          <span>Import / Export</span>
+          <span>{{ i18n.t('sidebar.importExport') }}</span>
         </button>
       </li>
     </ul>
@@ -129,5 +199,14 @@
     [notebooks]="notebookStore.notebooks()"
     [noteCount]="deleteTargetNoteCount()"
     (closed)="onDeleteClosed($event)"
+  />
+}
+
+@if (labelDeleteTarget(); as target) {
+  <app-confirm-dialog
+    [title]="i18n.t('label.deleteTitle')"
+    [message]="i18n.t('label.deleteMessage', { name: target.name })"
+    [confirmLabel]="i18n.t('label.deleteConfirm')"
+    (closed)="onLabelDeleteConfirmed($event)"
   />
 }

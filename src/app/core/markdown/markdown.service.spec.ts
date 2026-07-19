@@ -86,4 +86,31 @@ describe('MarkdownService', () => {
       expect(renderInlineToString(`![alt](glacier-img://${id})`)).not.toContain('<img');
     });
   });
+
+  describe('search highlighting', () => {
+    const renderHighlighted = (md: string, query: string): string =>
+      sanitizer.sanitize(1 /* SecurityContext.HTML */, service.render(md, query)) ?? '';
+
+    it('wraps matches in <mark> after sanitization', () => {
+      const html = renderHighlighted('Some **bold** text', 'bold');
+      expect(html).toContain('<strong><mark>bold</mark></strong>');
+    });
+
+    it('still sanitizes when a highlight query is present', () => {
+      const html = renderHighlighted('hello <script>alert(1)</script>', 'hello');
+      expect(html).not.toContain('<script');
+      expect(html).toContain('<mark>hello</mark>');
+    });
+
+    it('does not highlight inside link attributes', () => {
+      const html = renderHighlighted('[example](https://example.com)', 'example');
+      expect(html).toContain('href="https://example.com"');
+      expect(html).toContain('<mark>example</mark>');
+    });
+
+    it('highlights inline renders too', () => {
+      const html = sanitizer.sanitize(1, service.renderInline('buy milk', 'milk')) ?? '';
+      expect(html).toContain('<mark>milk</mark>');
+    });
+  });
 });

@@ -1,7 +1,11 @@
-import { inject, Injectable, signal } from '@angular/core';
+import { computed, inject, Injectable, signal } from '@angular/core';
 import { NotebookStore } from './notebook-store';
 
-export type View = { kind: 'notebook'; id: string } | { kind: 'archive' } | { kind: 'trash' };
+export type View =
+  | { kind: 'notebook'; id: string }
+  | { kind: 'archive' }
+  | { kind: 'trash' }
+  | { kind: 'label'; id: string };
 
 @Injectable({ providedIn: 'root' })
 export class UiStore {
@@ -11,6 +15,11 @@ export class UiStore {
   readonly view = signal<View | null>(null);
   readonly editorNoteId = signal<string | null>(null);
   readonly lightboxImageId = signal<string | null>(null);
+  readonly settingsOpen = signal(false);
+
+  readonly searchQuery = signal('');
+  readonly searchScope = signal<'all' | 'notebook'>('all');
+  readonly searching = computed(() => this.searchQuery().trim().length > 0);
 
   async init(): Promise<void> {
     const settings = await this.api.settings.get();
@@ -21,16 +30,44 @@ export class UiStore {
   }
 
   selectNotebook(id: string): void {
+    this.clearSearch();
     this.view.set({ kind: 'notebook', id });
     void this.api.settings.set({ lastSelectedNotebookId: id });
   }
 
   showArchive(): void {
+    this.clearSearch();
     this.view.set({ kind: 'archive' });
   }
 
   showTrash(): void {
+    this.clearSearch();
     this.view.set({ kind: 'trash' });
+  }
+
+  selectLabel(id: string): void {
+    this.clearSearch();
+    this.view.set({ kind: 'label', id });
+  }
+
+  setSearchQuery(query: string): void {
+    this.searchQuery.set(query);
+  }
+
+  toggleSearchScope(): void {
+    this.searchScope.update((scope) => (scope === 'all' ? 'notebook' : 'all'));
+  }
+
+  clearSearch(): void {
+    this.searchQuery.set('');
+  }
+
+  openSettings(): void {
+    this.settingsOpen.set(true);
+  }
+
+  closeSettings(): void {
+    this.settingsOpen.set(false);
   }
 
   openEditor(noteId: string): void {

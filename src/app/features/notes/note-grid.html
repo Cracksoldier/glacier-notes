@@ -2,9 +2,11 @@
   <div class="grid__trash-bar">
     <span class="grid__trash-hint">
       <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
-      Notes in Trash are deleted automatically.
+      {{ i18n.t('grid.trashHint') }}
     </span>
-    <button type="button" class="grid__empty-trash" (click)="emptyTrashConfirm.set(true)">Empty trash</button>
+    <button type="button" class="grid__empty-trash" (click)="emptyTrashConfirm.set(true)">
+      {{ i18n.t('grid.emptyTrash') }}
+    </button>
   </div>
 }
 
@@ -18,29 +20,29 @@
   @if (pinned().length > 0) {
     <h2 class="grid__heading">
       <i class="fa-solid fa-thumbtack" aria-hidden="true"></i>
-      Pinned
+      {{ i18n.t('grid.pinned') }}
     </h2>
     <div class="grid__masonry">
       @for (note of pinned(); track note.id) {
-        <app-note-card [note]="note" />
+        <app-note-card [note]="note" [searchQuery]="cardSearchQuery()" />
       }
     </div>
     @if (others().length > 0) {
-      <h2 class="grid__heading">Others</h2>
+      <h2 class="grid__heading">{{ i18n.t('grid.others') }}</h2>
     }
   }
   <div class="grid__masonry">
     @for (note of others(); track note.id) {
-      <app-note-card [note]="note" />
+      <app-note-card [note]="note" [searchQuery]="cardSearchQuery()" />
     }
   </div>
 }
 
 @if (emptyTrashConfirm()) {
   <app-confirm-dialog
-    title="Empty trash?"
-    message="All notes in the trash will be deleted permanently. This cannot be undone."
-    confirmLabel="Empty trash"
+    [title]="i18n.t('grid.emptyTrashTitle')"
+    [message]="i18n.t('grid.emptyTrashMessage')"
+    [confirmLabel]="i18n.t('grid.emptyTrash')"
     (closed)="onEmptyTrashConfirmed($event)"
   />
 }

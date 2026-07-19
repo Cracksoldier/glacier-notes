@@ -1,5 +1,11 @@
 <dialog #dialog class="editor" (cancel)="onCancel($event)" (click)="onBackdropClick($event)">
-  <div class="editor__body" (dragover)="onDragOver($event)" (drop)="onDrop($event)" (paste)="onPaste($event)">
+  <div
+    class="editor__body"
+    [style.background-color]="colorVar()"
+    (dragover)="onDragOver($event)"
+    (drop)="onDrop($event)"
+    (paste)="onPaste($event)"
+  >
     <input
       #fileInput
       type="file"
@@ -12,11 +18,11 @@
       <input
         class="editor__title"
         appAutofocus
-        placeholder="Title"
+        [placeholder]="i18n.t('editor.titlePlaceholder')"
         [value]="title()"
         (input)="onTitleInput($any($event.target).value)"
       />
-      <button type="button" class="editor__close" title="Close" (click)="close()">
+      <button type="button" class="editor__close" [title]="i18n.t('common.close')" (click)="close()">
         <i class="fa-solid fa-xmark" aria-hidden="true"></i>
       </button>
     </div>
@@ -33,7 +39,7 @@
               (click)="ui.openLightbox(id)"
               (keydown.enter)="ui.openLightbox(id)"
             />
-            <button type="button" class="editor__image-remove" title="Remove image" (click)="removeImage(id)">
+            <button type="button" class="editor__image-remove" [title]="i18n.t('editor.removeImage')" (click)="removeImage(id)">
               <i class="fa-solid fa-xmark" aria-hidden="true"></i>
             </button>
           </div>
@@ -56,11 +62,11 @@
           type="button"
           class="editor__preview-toggle"
           [class.editor__preview-toggle--active]="previewMode()"
-          [title]="previewMode() ? 'Edit' : 'Preview'"
+          [title]="previewMode() ? i18n.t('editor.edit') : i18n.t('editor.preview')"
           (click)="previewMode.set(!previewMode())"
         >
           <i class="fa-solid" [class.fa-eye]="!previewMode()" [class.fa-pen]="previewMode()" aria-hidden="true"></i>
-          {{ previewMode() ? 'Edit' : 'Preview' }}
+          {{ previewMode() ? i18n.t('editor.edit') : i18n.t('editor.preview') }}
         </button>
       </div>
 
@@ -70,7 +76,7 @@
         <textarea
           class="editor__content"
           #textarea
-          placeholder="Take a note…"
+          [placeholder]="i18n.t('editor.contentPlaceholder')"
           [value]="content()"
           (input)="onContentInput($any($event.target).value)"
         ></textarea>
@@ -86,12 +92,30 @@
             [class.fa-file-lines]="isChecklist()"
             aria-hidden="true"
           ></i>
-          {{ isChecklist() ? 'Convert to text note' : 'Convert to checklist' }}
+          {{ isChecklist() ? i18n.t('editor.convertToText') : i18n.t('editor.convertToChecklist') }}
         </button>
         <button type="button" class="editor__add-image" (click)="openImagePicker()">
           <i class="fa-solid fa-image" aria-hidden="true"></i>
-          Add image
+          {{ i18n.t('editor.addImage') }}
         </button>
+        <span class="editor__menu-anchor">
+          <button type="button" class="editor__color" [title]="i18n.t('card.color')" (click)="toggleColorMenu($event)">
+            <i class="fa-solid fa-palette" aria-hidden="true"></i>
+            {{ i18n.t('card.color') }}
+          </button>
+          @if (colorMenuOpen()) {
+            <app-color-picker-menu [note]="note()" (closed)="colorMenuOpen.set(false)" />
+          }
+        </span>
+        <span class="editor__menu-anchor">
+          <button type="button" class="editor__color" [title]="i18n.t('editor.labels')" (click)="toggleLabelMenu($event)">
+            <i class="fa-solid fa-tag" aria-hidden="true"></i>
+            {{ i18n.t('editor.labels') }}
+          </button>
+          @if (labelMenuOpen()) {
+            <app-label-picker-menu [note]="note()" (closed)="labelMenuOpen.set(false)" />
+          }
+        </span>
         @if (isChecklist()) {
           <label class="editor__setting">
             <input
@@ -99,11 +123,11 @@
               [checked]="settings.moveCheckedToBottom()"
               (change)="settings.setMoveCheckedToBottom($any($event.target).checked)"
             />
-            Move checked to bottom
+            {{ i18n.t('editor.moveChecked') }}
           </label>
         }
       </div>
-      <span class="editor__meta">Edited {{ note().updatedAt | date: 'medium' }}</span>
+      <span class="editor__meta">{{ i18n.t('editor.edited', { date: i18n.formatDate(note().updatedAt) }) }}</span>
     </div>
   </div>
 </dialog>

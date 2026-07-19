@@ -6,7 +6,29 @@
 
   <div class="header__search">
     <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
-    <input type="search" placeholder="Search notes…" disabled title="Search arrives in a later milestone" />
+    <input
+      #searchInput
+      type="search"
+      [placeholder]="i18n.t('header.searchPlaceholder')"
+      [value]="ui.searchQuery()"
+      (input)="onSearchInput(searchInput.value)"
+      (keydown.escape)="clearSearch(searchInput)"
+    />
+    @if (ui.searching() && ui.view()?.kind === 'notebook') {
+      <button type="button" class="header__search-scope" (click)="ui.toggleSearchScope()">
+        {{ ui.searchScope() === 'all' ? i18n.t('header.scopeAll') : i18n.t('header.scopeNotebook') }}
+      </button>
+    }
+    @if (ui.searching()) {
+      <button
+        type="button"
+        class="header__search-clear"
+        [attr.aria-label]="i18n.t('header.clearSearch')"
+        (click)="clearSearch(searchInput)"
+      >
+        <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+      </button>
+    }
   </div>
 
   <div class="header__actions">
@@ -14,11 +36,16 @@
       type="button"
       class="icon-button"
       (click)="toggleTheme()"
-      [attr.aria-label]="isDark() ? 'Switch to light theme' : 'Switch to dark theme'"
+      [attr.aria-label]="isDark() ? i18n.t('header.switchToLight') : i18n.t('header.switchToDark')"
     >
       <i class="fa-solid" [class.fa-sun]="isDark()" [class.fa-moon]="!isDark()" aria-hidden="true"></i>
     </button>
-    <button type="button" class="icon-button" disabled aria-label="Settings">
+    <button
+      type="button"
+      class="icon-button"
+      [attr.aria-label]="i18n.t('header.settings')"
+      (click)="ui.openSettings()"
+    >
       <i class="fa-solid fa-gear" aria-hidden="true"></i>
     </button>
   </div>

@@ -38,10 +38,10 @@
 
 .confirm__button--danger {
   border-color: transparent;
-  background-color: #c0392b;
+  background-color: var(--color-danger);
   color: #ffffff;
 
   &:hover {
-    background-color: #d64534;
+    background-color: var(--color-danger-hover);
   }
 }

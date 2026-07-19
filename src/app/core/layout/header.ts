@@ -1,4 +1,9 @@
-import { Component, signal } from '@angular/core';
+import { Component, computed, inject } from '@angular/core';
+import { I18nService } from '../i18n/i18n.service';
+import { SettingsStore } from '../store/settings-store';
+import { UiStore } from '../store/ui-store';
+
+const SEARCH_DEBOUNCE_MS = 200;
 
 @Component({
   selector: 'app-header',
@@ -6,13 +11,26 @@ import { Component, signal } from '@angular/core';
   styleUrl: './header.scss',
 })
 export class Header {
-  protected readonly isDark = signal(true);
+  protected readonly ui = inject(UiStore);
+  protected readonly i18n = inject(I18nService);
+  private readonly settings = inject(SettingsStore);
 
-  // Placeholder for M1: toggles the theme class only. Persistence arrives with
-  // the settings store (M2) and the full theming pass (M7).
+  protected readonly isDark = computed(() => this.settings.theme() === 'dark');
+
+  private searchTimer: ReturnType<typeof setTimeout> | undefined;
+
   protected toggleTheme(): void {
-    this.isDark.update((dark) => !dark);
-    document.body.classList.toggle('theme-dark', this.isDark());
-    document.body.classList.toggle('theme-light', !this.isDark());
+    void this.settings.setTheme(this.isDark() ? 'light' : 'dark');
+  }
+
+  protected onSearchInput(value: string): void {
+    clearTimeout(this.searchTimer);
+    this.searchTimer = setTimeout(() => this.ui.setSearchQuery(value), SEARCH_DEBOUNCE_MS);
+  }
+
+  protected clearSearch(input: HTMLInputElement): void {
+    clearTimeout(this.searchTimer);
+    input.value = '';
+    this.ui.clearSearch();
   }
 }

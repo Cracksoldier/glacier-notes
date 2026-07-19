@@ -1,0 +1,60 @@
+<dialog #dialog class="settings" (cancel)="onCancel($event)" (click)="onBackdropClick($event)">
+  <div class="settings__body">
+    <div class="settings__header">
+      <h3 class="settings__title">{{ i18n.t('settings.title') }}</h3>
+      <button type="button" class="settings__close" [attr.aria-label]="i18n.t('common.close')" (click)="closed.emit()">
+        <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+      </button>
+    </div>
+
+    <div class="settings__field">
+      <label class="settings__label" for="settings-theme">{{ i18n.t('settings.theme') }}</label>
+      <select
+        id="settings-theme"
+        class="settings__select"
+        [value]="settings.theme()"
+        (change)="setTheme($any($event.target).value)"
+      >
+        <option value="dark">{{ i18n.t('settings.themeDark') }}</option>
+        <option value="light">{{ i18n.t('settings.themeLight') }}</option>
+      </select>
+    </div>
+
+    <div class="settings__field">
+      <label class="settings__label" for="settings-language">{{ i18n.t('settings.language') }}</label>
+      <select
+        id="settings-language"
+        class="settings__select"
+        [value]="settings.language()"
+        (change)="setLanguage($any($event.target).value)"
+      >
+        <option value="en">English</option>
+        <option value="de">Deutsch</option>
+      </select>
+    </div>
+
+    <div class="settings__field settings__field--row">
+      <input
+        id="settings-move-checked"
+        type="checkbox"
+        [checked]="settings.moveCheckedToBottom()"
+        (change)="settings.setMoveCheckedToBottom($any($event.target).checked)"
+      />
+      <label class="settings__label" for="settings-move-checked">{{ i18n.t('settings.moveChecked') }}</label>
+    </div>
+
+    <div class="settings__field">
+      <label class="settings__label" for="settings-purge-days">{{ i18n.t('settings.purgeDays') }}</label>
+      <input
+        id="settings-purge-days"
+        class="settings__number"
+        type="number"
+        min="0"
+        step="1"
+        [value]="settings.trashAutoPurgeDays()"
+        (change)="setPurgeDays($any($event.target).value)"
+      />
+      <p class="settings__hint">{{ i18n.t('settings.purgeHint') }}</p>
+    </div>
+  </div>
+</dialog>
