@@ -1,5 +1,12 @@
 import type { ChecklistItem } from '../../../../electron/api';
-import { checklistToText, displayOrder, newItem, reorderItems, resequence, textToChecklist } from './checklist-model';
+import {
+  checklistToText,
+  displayOrder,
+  newItem,
+  reorderItems,
+  resequence,
+  textToChecklist,
+} from './checklist-model';
 
 const item = (id: string, text: string, checked: boolean, sortOrder: number): ChecklistItem => ({
   id,

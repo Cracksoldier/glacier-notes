@@ -7,7 +7,12 @@ export interface EditResult {
   selEnd: number;
 }
 
-export function wrapSelection(value: string, selStart: number, selEnd: number, marker: string): EditResult {
+export function wrapSelection(
+  value: string,
+  selStart: number,
+  selEnd: number,
+  marker: string,
+): EditResult {
   const before = value.slice(0, selStart);
   const selected = value.slice(selStart, selEnd);
   const after = value.slice(selEnd);
@@ -25,12 +30,19 @@ export function wrapSelection(value: string, selStart: number, selEnd: number, m
   };
 }
 
-export function prefixLines(value: string, selStart: number, selEnd: number, prefix: string): EditResult {
+export function prefixLines(
+  value: string,
+  selStart: number,
+  selEnd: number,
+  prefix: string,
+): EditResult {
   const segmentStart = value.lastIndexOf('\n', selStart - 1) + 1;
   const segment = value.slice(segmentStart, selEnd);
   const lines = segment.split('\n');
   const allPrefixed = lines.every((line) => line.startsWith(prefix));
-  const updated = lines.map((line) => (allPrefixed ? line.slice(prefix.length) : prefix + line)).join('\n');
+  const updated = lines
+    .map((line) => (allPrefixed ? line.slice(prefix.length) : prefix + line))
+    .join('\n');
   const firstLineDelta = allPrefixed ? -prefix.length : prefix.length;
   return {
     value: value.slice(0, segmentStart) + updated + value.slice(selEnd),

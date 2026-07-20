@@ -50,8 +50,9 @@ useful commands:
 | `npm run build`          | Build the Angular renderer and compile Electron TypeScript |
 | `npm run electron:prod`  | Build and launch the production-style application          |
 | `npm run verify:offline` | Check production resources for remote runtime dependencies |
+| `npm run format:check`   | Check Biome-supported files for formatting                  |
+| `npm run format`         | Format Biome-supported files                                |
 | `npm run watch`          | Rebuild the Angular renderer when source files change      |
-| `npx prettier --check .` | Check repository formatting                                |
 
 Build artifacts are written to `dist/` and `dist-electron/`.
 

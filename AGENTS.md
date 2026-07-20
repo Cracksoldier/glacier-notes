@@ -20,15 +20,20 @@ checklist. Mark an item complete only after verification.
 - `npm test` runs all Vitest unit tests through Angular's test builder.
 - `npx ng test --include src/app/core/markdown/markdown.service.spec.ts` runs one spec.
 - `npm run electron:prod` builds and launches the production-style application.
-- `npx prettier --check .` checks formatting; use `npx prettier --write <files>` to fix it.
+- `npm run format:check` checks Biome-supported files; use `npm run format` to fix them.
 
 ## Coding Style & Naming Conventions
 
 Use strict TypeScript, two-space indentation, single quotes, and 100-character lines as
-configured by `.editorconfig` and `.prettierrc`. Use kebab-case filenames (`note-card.ts`),
+configured by `.editorconfig` and `biome.json`. Use kebab-case filenames (`note-card.ts`),
 PascalCase for classes and components, and camelCase for functions and variables. Keep
 component templates and SCSS beside their TypeScript files. Prefer Angular signals for
 renderer state and plain exported functions for independently testable logic.
+
+Biome is the sole formatter dependency. It formats supported TypeScript, JavaScript, JSON, and
+CSS files; its experimental HTML formatter is disabled because it is not Angular-control-flow
+safe, and Biome does not currently format SCSS, Markdown, or YAML. Keep those files consistent
+with their surrounding style and `.editorconfig`.
 
 IPC changes must update the full contract: `electron/api.ts`, `preload.ts`, `ipc.ts`, and
 `src/app/testing/glacier-api-stub.ts`. Validate renderer input in the main process.

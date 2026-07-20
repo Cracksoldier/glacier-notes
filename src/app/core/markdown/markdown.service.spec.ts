@@ -11,7 +11,8 @@ describe('MarkdownService', () => {
     sanitizer = TestBed.inject(DomSanitizer);
   });
 
-  const renderToString = (md: string): string => sanitizer.sanitize(1 /* SecurityContext.HTML */, service.render(md)) ?? '';
+  const renderToString = (md: string): string =>
+    sanitizer.sanitize(1 /* SecurityContext.HTML */, service.render(md)) ?? '';
 
   it('renders basic markdown', () => {
     const html = renderToString('# Title\n\nSome **bold** text');

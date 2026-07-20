@@ -1,7 +1,16 @@
 import { Component, inject, input, output } from '@angular/core';
 import { I18nService, TranslationKey } from '../../core/i18n/i18n.service';
 
-export type ToolbarAction = 'bold' | 'italic' | 'h1' | 'h2' | 'ul' | 'ol' | 'link' | 'code' | 'image';
+export type ToolbarAction =
+  | 'bold'
+  | 'italic'
+  | 'h1'
+  | 'h2'
+  | 'ul'
+  | 'ol'
+  | 'link'
+  | 'code'
+  | 'image';
 
 @Component({
   selector: 'app-markdown-toolbar',

@@ -32,7 +32,9 @@ export interface ExportEnvelope {
 }
 
 export type ExportScope =
-  { kind: 'all' } | { kind: 'notebook'; notebookId: string } | { kind: 'note'; noteId: string };
+  | { kind: 'all' }
+  | { kind: 'notebook'; notebookId: string }
+  | { kind: 'note'; noteId: string };
 
 export interface ImportCounts {
   notebooks: number;

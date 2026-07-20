@@ -1,4 +1,14 @@
-import { afterEveryRender, Component, computed, ElementRef, inject, input, model, signal, viewChildren } from '@angular/core';
+import {
+  afterEveryRender,
+  Component,
+  computed,
+  ElementRef,
+  inject,
+  input,
+  model,
+  signal,
+  viewChildren,
+} from '@angular/core';
 import type { ChecklistItem } from '../../../../electron/api';
 import { I18nService } from '../../core/i18n/i18n.service';
 import { displayOrder, newItem, reorderItems, resequence } from './checklist-model';
@@ -16,7 +26,9 @@ export class ChecklistEditor {
   readonly items = model.required<ChecklistItem[]>();
   readonly moveCheckedToBottom = input.required<boolean>();
 
-  protected readonly displayed = computed(() => displayOrder(this.items(), this.moveCheckedToBottom()));
+  protected readonly displayed = computed(() =>
+    displayOrder(this.items(), this.moveCheckedToBottom()),
+  );
   protected readonly dragIndex = signal<number | null>(null);
   protected readonly dropIndex = signal<number | null>(null);
 
@@ -33,7 +45,9 @@ export class ChecklistEditor {
   }
 
   protected toggle(item: ChecklistItem): void {
-    this.items.update((items) => items.map((i) => (i.id === item.id ? { ...i, checked: !i.checked } : i)));
+    this.items.update((items) =>
+      items.map((i) => (i.id === item.id ? { ...i, checked: !i.checked } : i)),
+    );
   }
 
   protected onTextInput(item: ChecklistItem, text: string): void {

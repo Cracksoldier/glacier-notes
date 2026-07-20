@@ -4,7 +4,10 @@ export function newItem(text: string, sortOrder: number): ChecklistItem {
   return { id: crypto.randomUUID(), text, checked: false, sortOrder };
 }
 
-export function displayOrder(items: ChecklistItem[], moveCheckedToBottom: boolean): ChecklistItem[] {
+export function displayOrder(
+  items: ChecklistItem[],
+  moveCheckedToBottom: boolean,
+): ChecklistItem[] {
   const sorted = [...items].sort((a, b) => a.sortOrder - b.sortOrder);
   if (!moveCheckedToBottom) return sorted;
   return [...sorted.filter((i) => !i.checked), ...sorted.filter((i) => i.checked)];

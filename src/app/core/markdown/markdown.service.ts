@@ -9,7 +9,8 @@ const PREVIEW_SOURCE_LIMIT = 600;
 const GLACIER_IMG_SRC = /^glacier-img:\/\/[0-9a-f-]{36}$/;
 
 // DOMPurify's default URI allow-list plus the app's glacier-img scheme.
-const ALLOWED_URI = /^(?:(?:(?:f|ht)tps?|mailto|tel|callto|sms|cid|xmpp|glacier-img):|[^a-z]|[a-z+.-]+(?:[^a-z+.\-:]|$))/i;
+const ALLOWED_URI =
+  /^(?:(?:(?:f|ht)tps?|mailto|tel|callto|sms|cid|xmpp|glacier-img):|[^a-z]|[a-z+.-]+(?:[^a-z+.\-:]|$))/i;
 
 @Injectable({ providedIn: 'root' })
 export class MarkdownService {
@@ -43,7 +44,9 @@ export class MarkdownService {
 
   renderPreview(markdown: string, highlight?: string): SafeHtml {
     return this.render(
-      markdown.length > PREVIEW_SOURCE_LIMIT ? `${markdown.slice(0, PREVIEW_SOURCE_LIMIT)}…` : markdown,
+      markdown.length > PREVIEW_SOURCE_LIMIT
+        ? `${markdown.slice(0, PREVIEW_SOURCE_LIMIT)}…`
+        : markdown,
       highlight,
     );
   }

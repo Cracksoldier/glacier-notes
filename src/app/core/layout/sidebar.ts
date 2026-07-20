@@ -1,7 +1,10 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import type { Label, Notebook } from '../../../../electron/api';
 import { I18nService } from '../i18n/i18n.service';
-import { NotebookDeleteDialog, NotebookDeleteResult } from '../../features/notebooks/notebook-delete-dialog';
+import {
+  NotebookDeleteDialog,
+  NotebookDeleteResult,
+} from '../../features/notebooks/notebook-delete-dialog';
 import { Autofocus } from '../../shared/autofocus';
 import { ConfirmDialog } from '../../shared/confirm-dialog/confirm-dialog';
 import { LabelStore } from '../store/label-store';
@@ -53,9 +56,11 @@ export class Sidebar {
   protected readonly deleteTargetNoteCount = computed(() => {
     const target = this.deleteTarget();
     if (!target) return 0;
-    return [...this.noteStore.active(), ...this.noteStore.archived(), ...this.noteStore.trashed()].filter(
-      (n) => n.notebookId === target.id,
-    ).length;
+    return [
+      ...this.noteStore.active(),
+      ...this.noteStore.archived(),
+      ...this.noteStore.trashed(),
+    ].filter((n) => n.notebookId === target.id).length;
   });
 
   protected async commitCreate(value: string): Promise<void> {

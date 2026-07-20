@@ -1,4 +1,12 @@
-import { AfterViewInit, Component, ElementRef, input, OnDestroy, output, viewChild } from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  ElementRef,
+  input,
+  OnDestroy,
+  output,
+  viewChild,
+} from '@angular/core';
 import { GlacierImgPipe } from '../glacier-img.pipe';
 
 @Component({

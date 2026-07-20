@@ -15,7 +15,9 @@ Glacier Notes — an offline, Google Keep-like note-taking desktop app (Electron
 - `npx ng test --filter '^MarkdownService'` — filter by suite/test name regex
 - `npm run electron:prod` — build then run the packaged-style app
 
-Formatting: Prettier (`.prettierrc`): 100-char lines, single quotes, Angular parser for `.html`.
+Formatting: Biome (`biome.json`): two-space indentation, 100-char lines, and single quotes for
+supported files. Angular HTML, SCSS, Markdown, and YAML remain manually formatted because Biome
+does not safely support those repository formats.
 
 ### Headless smoke probes
 

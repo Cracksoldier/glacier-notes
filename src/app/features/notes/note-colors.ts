@@ -1,4 +1,13 @@
-export const NOTE_COLORS = ['red', 'orange', 'yellow', 'green', 'teal', 'blue', 'purple', 'pink'] as const;
+export const NOTE_COLORS = [
+  'red',
+  'orange',
+  'yellow',
+  'green',
+  'teal',
+  'blue',
+  'purple',
+  'pink',
+] as const;
 
 export type NoteColor = (typeof NOTE_COLORS)[number];
 
