@@ -38,6 +38,12 @@ export interface SystemCapabilities {
   quickNoteShortcutRegistered: boolean;
 }
 
+export interface RecoveryWarning {
+  storageFile: string;
+  backupPath: string;
+  action: 'reset' | 'skipped';
+}
+
 /** Commands the main process (menu, tray) sends to the renderer. */
 export type AppCommand =
   | 'new-text-note'
@@ -105,6 +111,7 @@ export interface GlacierApi {
   };
   system: {
     getCapabilities(): Promise<SystemCapabilities>;
+    getStartupWarnings(): Promise<RecoveryWarning[]>;
   };
   events: {
     /** Menu/tray commands from the main process. Returns an unsubscriber. */

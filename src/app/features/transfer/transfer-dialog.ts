@@ -22,6 +22,8 @@ type Step =
   | { kind: 'done'; counts: ImportCounts }
   | { kind: 'error'; errors: string[] };
 
+const MAX_VISIBLE_ERRORS = 25;
+
 @Component({
   selector: 'app-transfer-dialog',
   templateUrl: './transfer-dialog.html',
@@ -50,7 +52,11 @@ export class TransferDialog implements AfterViewInit, OnDestroy {
   });
   protected readonly errors = computed(() => {
     const step = this.step();
-    return step.kind === 'error' ? step.errors : [];
+    return step.kind === 'error' ? step.errors.slice(0, MAX_VISIBLE_ERRORS) : [];
+  });
+  protected readonly hiddenErrorCount = computed(() => {
+    const step = this.step();
+    return step.kind === 'error' ? Math.max(0, step.errors.length - MAX_VISIBLE_ERRORS) : 0;
   });
 
   private readonly dialogRef = viewChild.required<ElementRef<HTMLDialogElement>>('dialog');

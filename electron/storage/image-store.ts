@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { readJsonFile, writeJsonAtomic } from './json-store';
+import { readJsonFile, StorageRecoveryWarning, writeJsonAtomic } from './json-store';
 import { ImageAsset, newId, requireEntityId, SCHEMA_VERSION } from './models';
 
 interface ImagesFile {
@@ -20,7 +20,10 @@ export class ImageStore {
   private readonly dir: string;
   private readonly images = new Map<string, ImageAsset>();
 
-  constructor(baseDir: string) {
+  constructor(
+    baseDir: string,
+    private readonly onCorrupt?: (warning: StorageRecoveryWarning) => void,
+  ) {
     this.file = path.join(baseDir, 'images.json');
     this.dir = path.join(baseDir, 'images');
   }
@@ -28,7 +31,11 @@ export class ImageStore {
   init(): void {
     this.images.clear();
     fs.mkdirSync(this.dir, { recursive: true });
-    for (const asset of readJsonFile<ImagesFile>(this.file)?.images ?? []) {
+    const stored = readJsonFile<ImagesFile>(this.file, {
+      action: 'reset',
+      onCorrupt: this.onCorrupt,
+    });
+    for (const asset of stored?.images ?? []) {
       this.images.set(asset.id, asset);
     }
   }

@@ -2,6 +2,12 @@
   "name": "glacier-notes",
   "version": "0.1.0",
   "description": "Glacier Notes — offline note-taking app (Electron + Angular)",
+  "author": {
+    "name": "Glacier Notes contributors",
+    "email": "Cracksoldier@users.noreply.github.com"
+  },
+  "homepage": "https://github.com/Cracksoldier/glacier-notes",
+  "desktopName": "com.glacier.notes",
   "main": "dist-electron/main.js",
   "scripts": {
     "ng": "ng",
@@ -9,6 +15,13 @@
     "electron:dev": "wait-on tcp:localhost:4200 && tsc -p electron && GLACIER_DEV=1 electron .",
     "build": "ng build && tsc -p electron",
     "electron:prod": "npm run build && electron .",
+    "package": "npm run build && electron-builder --publish never",
+    "package:dir": "npm run build && electron-builder --dir --publish never",
+    "package:linux": "npm run build && electron-builder --linux --x64 --publish never",
+    "package:win": "npm run build && electron-builder --win --x64 --publish never",
+    "package:mac": "npm run build && electron-builder --mac --x64 --publish never",
+    "verify:offline": "node scripts/verify-offline.mjs",
+    "smoke:packaged": "node scripts/smoke-packaged.mjs",
     "watch": "ng build --watch --configuration development",
     "test": "ng test"
   },
@@ -33,6 +46,7 @@
     "@angular/compiler-cli": "^22.0.0",
     "concurrently": "^10.0.3",
     "electron": "^43.1.1",
+    "electron-builder": "^26.15.3",
     "jsdom": "^28.0.0",
     "prettier": "^3.8.1",
     "typescript": "~6.0.2",

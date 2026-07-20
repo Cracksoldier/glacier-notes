@@ -1,0 +1,62 @@
+appId: com.glacier.notes
+productName: Glacier Notes
+asar: true
+
+directories:
+  output: release
+
+files:
+  - package.json
+  - dist-electron/**/*
+  - dist/glacier-notes/browser/**/*
+  - '!node_modules/**/*'
+
+extraResources:
+  - from: build/icon.png
+    to: icon.png
+  - from: build/tray.png
+    to: tray.png
+  - from: build/tray@2x.png
+    to: tray@2x.png
+
+linux:
+  icon: build/icons
+  category: Utility
+  executableName: glacier-notes
+  syncDesktopName: true
+  target:
+    - target: AppImage
+      arch: [x64]
+    - target: deb
+      arch: [x64]
+
+appImage:
+  artifactName: Glacier-Notes-${version}-linux-${arch}.AppImage
+
+deb:
+  artifactName: Glacier-Notes-${version}-linux-${arch}.deb
+
+win:
+  icon: build/icon.ico
+  target:
+    - target: nsis
+      arch: [x64]
+    - target: portable
+      arch: [x64]
+
+nsis:
+  artifactName: Glacier-Notes-${version}-win-${arch}-Setup.${ext}
+
+portable:
+  artifactName: Glacier-Notes-${version}-win-${arch}-Portable.${ext}
+
+mac:
+  icon: build/icon.icns
+  identity: null
+  category: public.app-category.productivity
+  target:
+    - target: dmg
+      arch: [x64]
+
+dmg:
+  artifactName: Glacier-Notes-${version}-mac-${arch}.${ext}

@@ -142,11 +142,17 @@
       @case ('error') {
         <section class="transfer__section">
           <h4 class="transfer__heading">{{ i18n.t('transfer.errorTitle') }}</h4>
+          <p class="transfer__hint">{{ i18n.t('transfer.errorMessage') }}</p>
           <ul class="transfer__errors">
             @for (error of errors(); track $index) {
               <li>{{ error }}</li>
             }
           </ul>
+          @if (hiddenErrorCount() > 0) {
+            <p class="transfer__hint">
+              {{ i18n.t('transfer.moreErrors', { count: hiddenErrorCount() }) }}
+            </p>
+          }
           <div class="transfer__actions">
             <button type="button" class="transfer__button" (click)="step.set({ kind: 'menu' })">
               {{ i18n.t('common.close') }}

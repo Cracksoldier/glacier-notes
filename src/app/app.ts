@@ -1,4 +1,5 @@
-import { Component, computed, effect, inject } from '@angular/core';
+import { Component, computed, effect, inject, signal } from '@angular/core';
+import type { RecoveryWarning } from '../../electron/api';
 import { I18nService } from './core/i18n/i18n.service';
 import { Header } from './core/layout/header';
 import { Sidebar } from './core/layout/sidebar';
@@ -14,6 +15,7 @@ import { SettingsDialog } from './features/settings/settings-dialog';
 import { TransferDialog } from './features/transfer/transfer-dialog';
 import { ImageLightbox } from './shared/image-lightbox/image-lightbox';
 import { ShortcutHelpDialog } from './shared/shortcut-help-dialog/shortcut-help-dialog';
+import { StorageRecoveryDialog } from './shared/storage-recovery-dialog/storage-recovery-dialog';
 
 @Component({
   selector: 'app-root',
@@ -26,6 +28,7 @@ import { ShortcutHelpDialog } from './shared/shortcut-help-dialog/shortcut-help-
     SettingsDialog,
     ShortcutHelpDialog,
     TransferDialog,
+    StorageRecoveryDialog,
   ],
   templateUrl: './app.html',
   styleUrl: './app.scss',
@@ -38,6 +41,7 @@ export class App {
   protected readonly noteStore = inject(NoteStore);
   protected readonly ui = inject(UiStore);
   protected readonly i18n = inject(I18nService);
+  protected readonly startupWarnings = signal<RecoveryWarning[]>([]);
 
   protected readonly currentNotebookId = computed(() => {
     const view = this.ui.view();
@@ -76,5 +80,6 @@ export class App {
       this.settingsStore.init(),
     ]);
     await this.ui.init();
+    this.startupWarnings.set(await window.glacierApi.system.getStartupWarnings());
   }
 }

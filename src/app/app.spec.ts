@@ -24,4 +24,30 @@ describe('App', () => {
     expect(compiled.querySelector('.header__title')?.textContent).toContain('Glacier Notes');
     expect(compiled.querySelector('.empty-state__title')?.textContent).toContain('No notes yet');
   });
+
+  it('shows startup storage recovery warnings', async () => {
+    const stub = installGlacierApiStub();
+    stub.startupWarnings.push({
+      storageFile: 'notes/bad.json',
+      backupPath: '/data/notes/bad.json.corrupt-2026',
+      action: 'skipped',
+    });
+    HTMLDialogElement.prototype.showModal ??= function (this: HTMLDialogElement) {
+      this.open = true;
+    };
+    HTMLDialogElement.prototype.close ??= function (this: HTMLDialogElement) {
+      this.open = false;
+    };
+
+    const fixture = TestBed.createComponent(App);
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('.recovery')?.textContent).toContain(
+      'notes/bad.json',
+    );
+    expect(fixture.nativeElement.querySelector('.recovery')?.textContent).toContain(
+      'bad.json.corrupt-2026',
+    );
+  });
 });

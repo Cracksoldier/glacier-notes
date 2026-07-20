@@ -64,6 +64,7 @@ const api: GlacierApi = {
   },
   system: {
     getCapabilities: () => ipcRenderer.invoke('system:getCapabilities'),
+    getStartupWarnings: () => ipcRenderer.invoke('system:getStartupWarnings'),
   },
   events: {
     onCommand: (callback: (command: AppCommand) => void) => {

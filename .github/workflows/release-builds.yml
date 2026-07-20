@@ -1,0 +1,69 @@
+name: Release builds
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: read
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm test -- --watch=false
+      - run: npm run build
+      - run: npm run verify:offline
+
+  package:
+    needs: quality
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            platform: linux
+            command: npm run package:linux
+            artifact: release/*.AppImage
+            artifact_extra: release/*.deb
+          - os: windows-latest
+            platform: win32
+            command: npm run package:win
+            artifact: release/*.exe
+            artifact_extra: ''
+          - os: macos-15-intel
+            platform: darwin
+            command: npm run package:mac
+            artifact: release/*.dmg
+            artifact_extra: ''
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: ${{ matrix.command }}
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+      - run: npm run verify:offline
+      - if: matrix.platform == 'linux'
+        run: xvfb-run -a npm run smoke:packaged -- linux
+      - if: matrix.platform != 'linux'
+        run: npm run smoke:packaged -- ${{ matrix.platform }}
+      - uses: actions/upload-artifact@v6
+        with:
+          name: glacier-notes-${{ matrix.platform }}-x64
+          if-no-files-found: error
+          path: |
+            ${{ matrix.artifact }}
+            ${{ matrix.artifact_extra }}

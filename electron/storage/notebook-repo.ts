@@ -1,5 +1,10 @@
 import * as path from 'path';
-import { DebouncedWriter, readJsonFile, writeJsonAtomic } from './json-store';
+import {
+  DebouncedWriter,
+  readJsonFile,
+  StorageRecoveryWarning,
+  writeJsonAtomic,
+} from './json-store';
 import { newId, Notebook, nowIso, SCHEMA_VERSION } from './models';
 
 interface NotebooksFile {
@@ -18,12 +23,16 @@ export class NotebookRepo {
   constructor(
     baseDir: string,
     private readonly writer: DebouncedWriter,
+    private readonly onCorrupt?: (warning: StorageRecoveryWarning) => void,
   ) {
     this.file = path.join(baseDir, 'notebooks.json');
   }
 
   init(): void {
-    const raw = readJsonFile<NotebooksFile>(this.file);
+    const raw = readJsonFile<NotebooksFile>(this.file, {
+      action: 'reset',
+      onCorrupt: this.onCorrupt,
+    });
     if (raw?.notebooks?.length) {
       this.notebooks = raw.notebooks;
       this.defaultNotebookId = this.notebooks.some((n) => n.id === raw.defaultNotebookId)

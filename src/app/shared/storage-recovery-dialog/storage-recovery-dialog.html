@@ -1,0 +1,24 @@
+<dialog #dialog class="recovery" (cancel)="close($event)">
+  <div class="recovery__body">
+    <div class="recovery__heading">
+      <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
+      <h3>{{ i18n.t('recovery.title') }}</h3>
+    </div>
+    <p>{{ i18n.t('recovery.message') }}</p>
+    <ul class="recovery__list">
+      @for (warning of warnings(); track warning.backupPath) {
+        <li>
+          <strong>{{ warning.storageFile }}</strong>
+          <span>
+            {{ i18n.t(warning.action === 'skipped' ? 'recovery.skipped' : 'recovery.reset') }}
+          </span>
+          <code>{{ warning.backupPath }}</code>
+        </li>
+      }
+    </ul>
+    <p class="recovery__hint">{{ i18n.t('recovery.hint') }}</p>
+    <div class="recovery__actions">
+      <button type="button" (click)="close()">{{ i18n.t('common.close') }}</button>
+    </div>
+  </div>
+</dialog>

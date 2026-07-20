@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { DebouncedWriter, readJsonFile } from './json-store';
+import { DebouncedWriter, readJsonFile, StorageRecoveryWarning } from './json-store';
 import {
   newId,
   Note,
@@ -21,6 +21,7 @@ export class NoteRepo {
   constructor(
     baseDir: string,
     private readonly writer: DebouncedWriter,
+    private readonly onCorrupt?: (warning: StorageRecoveryWarning) => void,
   ) {
     this.dir = path.join(baseDir, 'notes');
   }
@@ -30,7 +31,11 @@ export class NoteRepo {
     fs.mkdirSync(this.dir, { recursive: true });
     for (const entry of fs.readdirSync(this.dir)) {
       if (!entry.endsWith('.json')) continue;
-      const raw = readJsonFile<StoredNote>(path.join(this.dir, entry));
+      const raw = readJsonFile<StoredNote>(path.join(this.dir, entry), {
+        action: 'skipped',
+        storageFile: path.join('notes', entry),
+        onCorrupt: this.onCorrupt,
+      });
       if (raw?.id) {
         const { schemaVersion: _v, ...note } = raw;
         this.notes.set(note.id, note);

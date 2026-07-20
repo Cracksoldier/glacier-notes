@@ -1,10 +1,49 @@
 import * as fs from 'fs';
 import * as path from 'path';
 
-export function readJsonFile<T>(file: string): T | undefined {
+export type StorageRecoveryAction = 'reset' | 'skipped';
+
+export interface StorageRecoveryWarning {
+  storageFile: string;
+  backupPath: string;
+  action: StorageRecoveryAction;
+}
+
+export interface ReadJsonOptions {
+  action: StorageRecoveryAction;
+  storageFile?: string;
+  onCorrupt?: (warning: StorageRecoveryWarning) => void;
+}
+
+function corruptBackupPath(file: string): string {
+  const stamp = new Date().toISOString().replace(/[:.]/g, '-');
+  const candidate = `${file}.corrupt-${stamp}`;
+  if (!fs.existsSync(candidate)) return candidate;
+
+  let suffix = 2;
+  while (fs.existsSync(`${candidate}-${suffix}`)) suffix += 1;
+  return `${candidate}-${suffix}`;
+}
+
+export function readJsonFile<T>(file: string, options?: ReadJsonOptions): T | undefined {
+  let source: string;
   try {
-    return JSON.parse(fs.readFileSync(file, 'utf-8')) as T;
+    source = fs.readFileSync(file, 'utf-8');
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === 'ENOENT') return undefined;
+    throw error;
+  }
+
+  try {
+    return JSON.parse(source) as T;
   } catch {
+    const backupPath = corruptBackupPath(file);
+    fs.renameSync(file, backupPath);
+    options?.onCorrupt?.({
+      storageFile: options.storageFile ?? path.basename(file),
+      backupPath,
+      action: options.action,
+    });
     return undefined;
   }
 }

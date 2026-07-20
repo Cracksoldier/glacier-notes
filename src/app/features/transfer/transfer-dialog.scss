@@ -155,8 +155,10 @@
 }
 
 .transfer__errors {
+  max-height: 220px;
   margin: 0 0 12px;
   padding-left: 18px;
+  overflow-y: auto;
   font-size: 13px;
   color: var(--color-danger);
 }

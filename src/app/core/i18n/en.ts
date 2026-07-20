@@ -156,7 +156,18 @@ export const en = {
   'transfer.doneMessage':
     'Imported: {notebooks} notebooks, {notes} notes, {labels} labels, {images} images.',
   'transfer.errorTitle': 'Operation failed',
+  'transfer.errorMessage':
+    'The selected file could not be imported. Review the validation details below.',
+  'transfer.moreErrors': '{count} additional validation errors are not shown.',
   'transfer.unknownError': 'The operation failed.',
+
+  'recovery.title': 'Local data was recovered',
+  'recovery.message':
+    'Glacier Notes found damaged storage files. The originals were preserved as backups.',
+  'recovery.reset': 'This data was reset to a safe default.',
+  'recovery.skipped': 'This damaged note was skipped.',
+  'recovery.hint':
+    'Keep these backup files if you want to inspect or manually recover their contents.',
 
   'shortcuts.title': 'Keyboard shortcuts',
   'shortcuts.newTextNote': 'New text note',

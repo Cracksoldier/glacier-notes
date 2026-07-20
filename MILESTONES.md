@@ -131,12 +131,12 @@ Implementation plan derived from [SPECIFICATION.md](SPECIFICATION.md). Each mile
 
 **Goal:** Distributable builds and final QA.
 
-- [ ] `electron-builder` config: Linux (AppImage + deb), Windows (NSIS + portable), macOS (dmg); app ID `com.glacier.notes` (§10)
-- [ ] App icons for all platforms
+- [x] `electron-builder` config: Linux (AppImage + deb), Windows (NSIS + portable), macOS (dmg); app ID `com.glacier.notes` (§10)
+- [x] App icons for all platforms
 - [ ] Full offline verification: no network access at runtime, no CDN references in bundles (§2, §11.1)
 - [ ] Full acceptance-criteria walkthrough (§11.1–15) on at least Linux + one other platform
-- [ ] Error handling polish: corrupt storage file recovery message, import validation errors, empty states
-- [ ] README with build/run instructions and export-format documentation (§5.7)
+- [x] Error handling polish: corrupt storage file recovery message, import validation errors, empty states
+- [x] README with build/run instructions and export-format documentation (§5.7)
 
 **Done when:** all acceptance criteria in §11 pass; installers produced for all three targets.
 

@@ -1,4 +1,4 @@
-import { app, BrowserWindow, globalShortcut, ipcMain, protocol, session } from 'electron';
+import { app, BrowserWindow, dialog, globalShortcut, ipcMain, protocol, session } from 'electron';
 import * as fs from 'fs';
 import * as path from 'path';
 import { AppCommand } from './api';
@@ -21,10 +21,16 @@ import { LabelRepo } from './storage/label-repo';
 import { NotebookRepo } from './storage/notebook-repo';
 import { NoteRepo } from './storage/note-repo';
 import { SettingsStore } from './storage/settings-store';
+import type { StorageRecoveryWarning } from './storage/json-store';
 import { createWindowState } from './window-state';
 
 const isDev = process.env['GLACIER_DEV'] === '1';
 const DEV_URL = 'http://localhost:4200';
+const smokeRemoteRequests: string[] = [];
+
+if (process.env['GLACIER_SMOKE'] === '1' && process.env['GLACIER_SMOKE_USER_DATA']) {
+  app.setPath('userData', path.resolve(process.env['GLACIER_SMOKE_USER_DATA']));
+}
 
 const IMAGE_ID_PATTERN = /^[0-9a-f-]{36}$/;
 
@@ -73,6 +79,16 @@ function installCsp(): void {
       },
     });
   });
+
+  if (process.env['GLACIER_SMOKE_OFFLINE'] === '1') {
+    session.defaultSession.webRequest.onBeforeRequest(
+      { urls: ['http://*/*', 'https://*/*', 'ws://*/*', 'wss://*/*'] },
+      (details, callback) => {
+        smokeRemoteRequests.push(details.url);
+        callback({ cancel: true });
+      },
+    );
+  }
 }
 
 let mainWin: BrowserWindow | null = null;
@@ -101,6 +117,9 @@ function showMainWindow(): void {
 
 function createMainWindow(): void {
   const windowState = createWindowState({ width: 1200, height: 800 });
+  const icon = app.isPackaged
+    ? path.join(process.resourcesPath, 'icon.png')
+    : path.join(__dirname, '..', 'build', 'icon.png');
 
   const win = new BrowserWindow({
     ...windowState.bounds,
@@ -109,6 +128,7 @@ function createMainWindow(): void {
     show: false,
     backgroundColor: '#0d1b2a',
     title: 'Glacier Notes',
+    icon,
     autoHideMenuBar: true,
     webPreferences: {
       contextIsolation: true,
@@ -182,10 +202,22 @@ function createMainWindow(): void {
           }
           const image = await win.webContents.capturePage();
           fs.writeFileSync(path.join(app.getPath('temp'), 'glacier-smoke.png'), image.toPNG());
-          console.log(
-            '[smoke]',
-            JSON.stringify({ ping, requireType, title, bodyClass, fonts, iconProbe }),
+          const resources = await win.webContents.executeJavaScript(
+            `performance.getEntriesByType('resource').map(entry => entry.name)`,
           );
+          const result = {
+            ping,
+            requireType,
+            title,
+            bodyClass,
+            fonts,
+            iconProbe,
+            resources,
+            remoteRequests: smokeRemoteRequests,
+          };
+          const resultFile = process.env['GLACIER_SMOKE_RESULT'];
+          if (resultFile) fs.writeFileSync(resultFile, JSON.stringify(result, null, 2));
+          console.log('[smoke]', JSON.stringify(result));
         } catch (err) {
           console.error('[smoke] failed:', err);
           process.exitCode = 1;
@@ -203,86 +235,102 @@ function createMainWindow(): void {
   }
 }
 
-app.whenReady().then(() => {
-  installCsp();
+app
+  .whenReady()
+  .then(() => {
+    installCsp();
 
-  const baseDir = app.getPath('userData');
-  recoverImportTransaction(baseDir);
-  const writer = new DebouncedWriter();
-  const notebooks = new NotebookRepo(baseDir, writer);
-  const notes = new NoteRepo(baseDir, writer);
-  const labels = new LabelRepo(baseDir, writer, notes);
-  const images = new ImageStore(baseDir);
-  const settings = new SettingsStore(baseDir, app.getLocale());
-  notebooks.init();
-  notes.init();
-  labels.init();
-  images.init();
-  settings.init();
-  gcImages({ notes, images }, notes.purgeExpired(settings.get().trashAutoPurgeDays));
-  registerImageProtocol(images);
-  const repos = { notebooks, notes, labels, images, settings };
-  settingsRef = settings;
-  const isSmoke = process.env['GLACIER_SMOKE'] === '1';
-  // Heuristic: globalShortcut.register silently fails on most Wayland compositors.
-  globalShortcutAvailable =
-    process.platform !== 'linux' || process.env['XDG_SESSION_TYPE'] !== 'wayland';
+    const baseDir = app.getPath('userData');
+    const startupWarnings: StorageRecoveryWarning[] = [];
+    const onCorrupt = (warning: StorageRecoveryWarning) => startupWarnings.push(warning);
+    recoverImportTransaction(baseDir);
+    const writer = new DebouncedWriter();
+    const notebooks = new NotebookRepo(baseDir, writer, onCorrupt);
+    const notes = new NoteRepo(baseDir, writer, onCorrupt);
+    const labels = new LabelRepo(baseDir, writer, notes, onCorrupt);
+    const images = new ImageStore(baseDir, onCorrupt);
+    const settings = new SettingsStore(baseDir, app.getLocale(), onCorrupt);
+    notebooks.init();
+    notes.init();
+    labels.init();
+    images.init();
+    settings.init();
+    gcImages({ notes, images }, notes.purgeExpired(settings.get().trashAutoPurgeDays));
+    registerImageProtocol(images);
+    const repos = { notebooks, notes, labels, images, settings };
+    settingsRef = settings;
+    const isSmoke = process.env['GLACIER_SMOKE'] === '1';
+    // Heuristic: globalShortcut.register silently fails on most Wayland compositors.
+    globalShortcutAvailable =
+      process.platform !== 'linux' || process.env['XDG_SESSION_TYPE'] !== 'wayland';
 
-  registerIpc(repos, {
-    setSettings: (prev, patch, commit) => {
-      const nextShortcut = patch.quickNoteShortcut;
-      const changesShortcut = nextShortcut !== undefined && nextShortcut !== prev.quickNoteShortcut;
-      if (changesShortcut && globalShortcutAvailable && !isSmoke) {
-        if (!registerQuickNoteShortcut(nextShortcut)) {
-          registerQuickNoteShortcut(prev.quickNoteShortcut);
-          throw new Error('Unable to register quick-note shortcut');
-        }
-      }
-      try {
-        const next = commit();
-        if (prev.language !== next.language) refreshDesktopLanguage(next.language);
-        return next;
-      } catch (error) {
+    registerIpc(repos, {
+      setSettings: (prev, patch, commit) => {
+        const nextShortcut = patch.quickNoteShortcut;
+        const changesShortcut =
+          nextShortcut !== undefined && nextShortcut !== prev.quickNoteShortcut;
         if (changesShortcut && globalShortcutAvailable && !isSmoke) {
-          registerQuickNoteShortcut(prev.quickNoteShortcut);
+          if (!registerQuickNoteShortcut(nextShortcut)) {
+            registerQuickNoteShortcut(prev.quickNoteShortcut);
+            throw new Error('Unable to register quick-note shortcut');
+          }
         }
-        throw error;
-      }
-    },
-  });
-  registerTransferIpc(repos, writer, () => mainWin, baseDir);
-  registerShareIpc(repos);
-  registerQuickNoteIpc(repos, () => mainWin);
-  ipcMain.handle('system:getCapabilities', () => ({
-    tray: trayAvailable,
-    globalShortcut: globalShortcutAvailable,
-    quickNoteShortcutRegistered: isQuickNoteShortcutRegistered(),
-  }));
-  refreshDesktopLanguage(settings.get().language);
-
-  // Tray and global shortcuts touch the desktop environment — skip them in headless smoke runs.
-  if (!isSmoke) {
-    trayAvailable = setupTray(
-      {
-        onOpen: () => showMainWindow(),
-        onQuickNote: () => openQuickNoteWindow(),
-        onQuit: () => app.quit(),
+        try {
+          const next = commit();
+          if (prev.language !== next.language) refreshDesktopLanguage(next.language);
+          return next;
+        } catch (error) {
+          if (changesShortcut && globalShortcutAvailable && !isSmoke) {
+            registerQuickNoteShortcut(prev.quickNoteShortcut);
+          }
+          throw error;
+        }
       },
-      settings.get().language,
-    ).available;
-    if (globalShortcutAvailable) registerQuickNoteShortcut(settings.get().quickNoteShortcut);
-  }
+    });
+    registerTransferIpc(repos, writer, () => mainWin, baseDir);
+    registerShareIpc(repos);
+    registerQuickNoteIpc(repos, () => mainWin);
+    ipcMain.handle('system:getCapabilities', () => ({
+      tray: trayAvailable,
+      globalShortcut: globalShortcutAvailable,
+      quickNoteShortcutRegistered: isQuickNoteShortcutRegistered(),
+    }));
+    ipcMain.handle('system:getStartupWarnings', () =>
+      startupWarnings.map((warning) => ({ ...warning })),
+    );
+    refreshDesktopLanguage(settings.get().language);
 
-  app.on('before-quit', () => {
-    isQuitting = true;
-    writer.flush();
+    // Tray and global shortcuts touch the desktop environment — skip them in headless smoke runs.
+    if (!isSmoke) {
+      trayAvailable = setupTray(
+        {
+          onOpen: () => showMainWindow(),
+          onQuickNote: () => openQuickNoteWindow(),
+          onQuit: () => app.quit(),
+        },
+        settings.get().language,
+      ).available;
+      if (globalShortcutAvailable) registerQuickNoteShortcut(settings.get().quickNoteShortcut);
+    }
+
+    app.on('before-quit', () => {
+      isQuitting = true;
+      writer.flush();
+    });
+    app.on('will-quit', () => globalShortcut.unregisterAll());
+
+    createMainWindow();
+
+    app.on('activate', () => showMainWindow());
+  })
+  .catch((error: unknown) => {
+    const detail = error instanceof Error ? error.message : String(error);
+    dialog.showErrorBox(
+      'Glacier Notes',
+      `Glacier Notes could not open its local data directory.\n\n${detail}`,
+    );
+    app.quit();
   });
-  app.on('will-quit', () => globalShortcut.unregisterAll());
-
-  createMainWindow();
-
-  app.on('activate', () => showMainWindow());
-});
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {

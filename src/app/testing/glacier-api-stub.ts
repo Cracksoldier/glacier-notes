@@ -7,6 +7,7 @@ import type {
   Label,
   Note,
   Notebook,
+  RecoveryWarning,
   Settings,
 } from '../../../electron/api';
 
@@ -28,6 +29,7 @@ export function installGlacierApiStub(): {
   transfer: TransferStubState;
   sharedNoteIds: string[];
   capabilities: { tray: boolean; globalShortcut: boolean; quickNoteShortcutRegistered: boolean };
+  startupWarnings: RecoveryWarning[];
   quickNotes: string[];
   quickNoteCanceled: boolean;
   rejectNextSettingsSet: boolean;
@@ -70,6 +72,7 @@ export function installGlacierApiStub(): {
     } as TransferStubState,
     sharedNoteIds: [] as string[],
     capabilities: { tray: true, globalShortcut: true, quickNoteShortcutRegistered: true },
+    startupWarnings: [] as RecoveryWarning[],
     quickNotes: [] as string[],
     quickNoteCanceled: false,
     rejectNextSettingsSet: false,
@@ -239,6 +242,7 @@ export function installGlacierApiStub(): {
     },
     system: {
       getCapabilities: async () => ({ ...state.capabilities }),
+      getStartupWarnings: async () => [...state.startupWarnings],
     },
     events: {
       onCommand: (callback) => {

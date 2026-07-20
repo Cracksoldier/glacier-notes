@@ -1,5 +1,5 @@
 import * as path from 'path';
-import { DebouncedWriter, readJsonFile } from './json-store';
+import { DebouncedWriter, readJsonFile, StorageRecoveryWarning } from './json-store';
 import { Label, newId, SCHEMA_VERSION } from './models';
 import { NoteRepo } from './note-repo';
 
@@ -16,12 +16,17 @@ export class LabelRepo {
     baseDir: string,
     private readonly writer: DebouncedWriter,
     private readonly noteRepo: NoteRepo,
+    private readonly onCorrupt?: (warning: StorageRecoveryWarning) => void,
   ) {
     this.file = path.join(baseDir, 'labels.json');
   }
 
   init(): void {
-    this.labels = readJsonFile<LabelsFile>(this.file)?.labels ?? [];
+    this.labels =
+      readJsonFile<LabelsFile>(this.file, {
+        action: 'reset',
+        onCorrupt: this.onCorrupt,
+      })?.labels ?? [];
   }
 
   list(): Label[] {

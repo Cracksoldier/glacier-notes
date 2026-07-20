@@ -163,7 +163,18 @@ export const de: Record<TranslationKey, string> = {
   'transfer.doneMessage':
     'Importiert: {notebooks} Notizbücher, {notes} Notizen, {labels} Labels, {images} Bilder.',
   'transfer.errorTitle': 'Vorgang fehlgeschlagen',
+  'transfer.errorMessage':
+    'Die ausgewählte Datei konnte nicht importiert werden. Prüfe die Validierungsdetails unten.',
+  'transfer.moreErrors': '{count} weitere Validierungsfehler werden nicht angezeigt.',
   'transfer.unknownError': 'Der Vorgang ist fehlgeschlagen.',
+
+  'recovery.title': 'Lokale Daten wurden wiederhergestellt',
+  'recovery.message':
+    'Glacier Notes hat beschädigte Speicherdateien gefunden. Die Originale wurden als Sicherungen erhalten.',
+  'recovery.reset': 'Diese Daten wurden auf einen sicheren Standard zurückgesetzt.',
+  'recovery.skipped': 'Diese beschädigte Notiz wurde übersprungen.',
+  'recovery.hint':
+    'Bewahre diese Sicherungsdateien auf, wenn du ihre Inhalte prüfen oder manuell wiederherstellen möchtest.',
 
   'shortcuts.title': 'Tastenkürzel',
   'shortcuts.newTextNote': 'Neue Textnotiz',
