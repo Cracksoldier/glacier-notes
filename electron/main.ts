@@ -200,8 +200,6 @@ function createMainWindow(): void {
             );
             console.log('[smoke:probe]', JSON.stringify(cssProbe));
           }
-          const image = await win.webContents.capturePage();
-          fs.writeFileSync(path.join(app.getPath('temp'), 'glacier-smoke.png'), image.toPNG());
           const resources = await win.webContents.executeJavaScript(
             `performance.getEntriesByType('resource').map(entry => entry.name)`,
           );
@@ -218,6 +216,16 @@ function createMainWindow(): void {
           const resultFile = process.env['GLACIER_SMOKE_RESULT'];
           if (resultFile) fs.writeFileSync(resultFile, JSON.stringify(result, null, 2));
           console.log('[smoke]', JSON.stringify(result));
+
+          // Page capture depends on Chromium's Viz compositor, which may be unavailable under
+          // Xvfb. It is a diagnostic artifact rather than a smoke assertion, so do not discard a
+          // successful bridge/DOM/offline result when capture is unsupported by the CI display.
+          try {
+            const image = await win.webContents.capturePage();
+            fs.writeFileSync(path.join(app.getPath('temp'), 'glacier-smoke.png'), image.toPNG());
+          } catch (err) {
+            console.warn('[smoke] screenshot unavailable:', err);
+          }
         } catch (err) {
           console.error('[smoke] failed:', err);
           process.exitCode = 1;
