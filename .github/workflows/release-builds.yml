@@ -58,6 +58,12 @@ jobs:
           CSC_IDENTITY_AUTO_DISCOVERY: 'false'
       - run: npm run verify:offline
       - if: matrix.platform == 'linux'
+        name: Configure Linux sandbox for smoke test
+        run: |
+          sudo chown root:root release/linux-unpacked/chrome-sandbox
+          sudo chmod 4755 release/linux-unpacked/chrome-sandbox
+          test "$(stat -c '%U:%G %a' release/linux-unpacked/chrome-sandbox)" = 'root:root 4755'
+      - if: matrix.platform == 'linux'
         run: xvfb-run -a npm run smoke:packaged -- linux
       - if: matrix.platform != 'linux'
         run: npm run smoke:packaged -- ${{ matrix.platform }}

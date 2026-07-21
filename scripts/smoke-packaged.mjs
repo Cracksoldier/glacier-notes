@@ -37,14 +37,20 @@ const timer = setTimeout(() => {
   child.kill('SIGKILL');
 }, 30_000);
 
-const exitCode = await new Promise((resolve, reject) => {
+const exitResult = await new Promise((resolve, reject) => {
   child.once('error', reject);
-  child.once('exit', (code) => resolve(code));
+  child.once('exit', (code, signal) => resolve({ code, signal }));
 });
 clearTimeout(timer);
 
 try {
-  if (exitCode !== 0) throw new Error(`Packaged app exited with code ${exitCode}`);
+  if (exitResult.code !== 0) {
+    const reason =
+      exitResult.code === null
+        ? `signal ${exitResult.signal ?? 'unknown'}`
+        : `code ${exitResult.code}`;
+    throw new Error(`Packaged app exited with ${reason}`);
+  }
   if (!fs.existsSync(resultFile)) throw new Error('Packaged app did not write a smoke result');
 
   const result = JSON.parse(fs.readFileSync(resultFile, 'utf-8'));
