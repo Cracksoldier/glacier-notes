@@ -7,6 +7,7 @@ directories:
 
 files:
   - package.json
+  - LICENSE
   - dist-electron/**/*
   - dist/glacier-notes/browser/**/*
   - '!node_modules/**/*'

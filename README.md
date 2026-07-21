@@ -166,3 +166,7 @@ limitation when unavailable.
 - [MILESTONES.md](MILESTONES.md) tracks implementation and release readiness.
 - [RELEASE_CHECKLIST.md](RELEASE_CHECKLIST.md) records automated evidence and platform sign-off.
 - [AGENTS.md](AGENTS.md) contains contributor workflow and coding conventions.
+
+## License
+
+Glacier Notes is licensed under the [MIT License](LICENSE).
