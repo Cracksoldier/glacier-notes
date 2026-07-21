@@ -5,8 +5,8 @@ Electron and Angular, stores everything on the local filesystem, and remains ful
 without a network connection. There are no accounts, cloud services, analytics, or runtime CDN
 dependencies.
 
-> Glacier Notes is currently at version 0.1.0. Release packages are unsigned and distributed
-> manually; the app does not contain an updater.
+> Release packages are unsigned and the app does not contain an updater. Published versions are
+> available from the GitHub Releases page.
 
 ## Features
 
@@ -68,9 +68,14 @@ Installers are built with `electron-builder` for x64. Run the command for the cu
 
 Generated packages and unpacked applications are written to the ignored `release/` directory.
 `npm run smoke:packaged -- <linux|win32|darwin>` launches the corresponding unpacked package
-with isolated temporary data and rejects any renderer network request. GitHub's
-`release-builds.yml` workflow runs quality checks and builds each target on a native runner when
-started manually or by a `v*` tag; it uploads artifacts but does not publish a GitHub Release.
+with isolated temporary data and rejects any renderer network request. The `release-builds.yml`
+workflow runs quality checks and builds each target on a native runner.
+Pushing a normalized SemVer tag such as `v0.2.0` publishes a GitHub Release with all five binaries
+and generated release notes. The workflow can also be started manually from `main` with a release
+version; it creates the corresponding tag and release at the selected commit. An optional next
+development version, such as `0.3.0-dev.0`, updates `package.json` and `package-lock.json` in a bot
+commit after the release is published. Versions containing a prerelease suffix are published as
+GitHub prereleases.
 
 Unsigned Windows and macOS packages can trigger operating-system trust warnings. Signing and
 notarization credentials are intentionally outside the v1 scope.
